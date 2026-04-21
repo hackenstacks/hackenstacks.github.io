@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXuS Dark Stack — Hydra Infrastructure</title>
+<script src="js/chart.min.js"></script>
+<style>
+  :root {
+    --bg: #080c18;
+    --surface: #0d1526;
+    --surface2: #111d35;
+    --border: #1e3a5f;
+    --accent: #00d4ff;
+    --accent2: #7b5ea7;
+    --green: #00ff88;
+    --amber: #ffb347;
+    --red: #ff4757;
+    --text: #c8d8e8;
+    --text-dim: #6a8aaa;
+    --text-bright: #e8f4ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 20% 50%, rgba(0,212,255,0.03) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(123,94,167,0.04) 0%, transparent 60%); pointer-events: none; }
+
+  /* NAV */
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid var(--border); background: rgba(8,12,24,0.9); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+  .nav-brand { font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--accent); letter-spacing: 0.15em; }
+  .nav-links { display: flex; gap: 1.5rem; }
+  .nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-badge { background: rgba(0,212,255,0.1); border: 1px solid var(--accent); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 3px; }
+
+  /* HERO */
+  .hero { padding: 5rem 2rem 3rem; text-align: center; max-width: 900px; margin: 0 auto; }
+  .hero-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1rem; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; color: var(--text-bright); line-height: 1.1; margin-bottom: 1rem; }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub { color: var(--text-dim); font-size: 1.05rem; line-height: 1.7; max-width: 650px; margin: 0 auto 2rem; }
+  .motto { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent2); border-left: 3px solid var(--accent2); padding-left: 1rem; text-align: left; display: inline-block; margin-top: 1rem; }
+
+  /* LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+  section { padding: 3.5rem 0; }
+  .section-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  h2 { font-size: 1.8rem; font-weight: 600; color: var(--text-bright); margin-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: var(--text-bright); margin-bottom: 0.5rem; }
+  .divider { height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); margin: 0.5rem 0 2rem; }
+
+  /* HYDRA STACK */
+  .hydra-stack { display: flex; flex-direction: column; gap: 0.6rem; margin: 2rem 0; }
+  .stack-layer { display: flex; align-items: stretch; gap: 0; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s; border: 1px solid var(--border); }
+  .stack-layer:hover { transform: translateX(6px); border-color: var(--accent); }
+  .layer-num { background: rgba(0,212,255,0.08); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 700; padding: 1.2rem; min-width: 3.5rem; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); }
+  .layer-body { background: var(--surface); flex: 1; padding: 1.2rem 1.5rem; }
+  .layer-name { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--text-bright); }
+  .layer-desc { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.3rem; }
+  .layer-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 3px; }
+  .tag-blue { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+  .tag-purple { background: rgba(123,94,167,0.15); color: #a97fd4; border: 1px solid rgba(123,94,167,0.3); }
+  .tag-green { background: rgba(0,255,136,0.08); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+  .tag-amber { background: rgba(255,179,71,0.1); color: var(--amber); border: 1px solid rgba(255,179,71,0.25); }
+  .layer-arrow { background: var(--surface); color: var(--text-dim); padding: 1.2rem; display: flex; align-items: center; font-size: 1.1rem; }
+
+  /* MEDUSA SECTION */
+  .medusa-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .medusa-head { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; cursor: pointer; transition: all 0.2s; }
+  .medusa-head:hover { border-color: var(--accent); background: var(--surface2); }
+  .medusa-head:nth-child(1) { border-top: 3px solid var(--accent); }
+  .medusa-head:nth-child(2) { border-top: 3px solid var(--accent2); }
+  .medusa-head:nth-child(3) { border-top: 3px solid var(--green); }
+  .head-icon { font-size: 2rem; margin-bottom: 0.8rem; }
+  .head-title { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 700; color: var(--text-bright); margin-bottom: 0.4rem; }
+  .head-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
+  .head-route { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); margin-top: 0.8rem; padding: 0.3rem 0.6rem; background: rgba(0,212,255,0.06); border-radius: 4px; }
+
+  /* ROUTING TABLE */
+  .route-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+  .route-table th { background: var(--surface2); color: var(--accent); padding: 0.7rem 1rem; text-align: left; font-size: 0.7rem; letter-spacing: 0.1em; border-bottom: 1px solid var(--border); }
+  .route-table td { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,58,95,0.5); color: var(--text); }
+  .route-table tr:hover td { background: var(--surface); }
+  .route-badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.7rem; }
+
+  /* INFRA ECONOMY */
+  .economy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; margin: 2rem 0; }
+  .economy-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; transition: all 0.2s; cursor: pointer; }
+  .economy-card:hover { border-color: var(--green); transform: translateY(-2px); }
+  .econ-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.15em; margin-bottom: 0.4rem; }
+  .econ-value { font-size: 1.8rem; font-weight: 700; color: var(--green); font-family: 'JetBrains Mono', monospace; }
+  .econ-desc { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.5rem; line-height: 1.5; }
+
+  /* RESIDUAL FLOW */
+  .residual-flow { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 2rem; margin: 2rem 0; position: relative; overflow: hidden; }
+  .residual-flow::before { content: 'RESIDUAL ENGINE'; position: absolute; top: 1rem; right: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--green); letter-spacing: 0.15em; opacity: 0.6; }
+  .flow-nodes { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .flow-node { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center; min-width: 120px; flex: 1; cursor: pointer; transition: all 0.2s; }
+  .flow-node:hover { border-color: var(--accent); }
+  .flow-node-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+  .flow-node-name { font-size: 0.78rem; font-weight: 600; color: var(--text-bright); }
+  .flow-node-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-dim); margin-top: 0.2rem; }
+  .flow-arrow { color: var(--green); font-size: 1.4rem; opacity: 0.7; }
+  .residual-rule { display: flex; align-items: flex-start; gap: 0.8rem; padding: 0.8rem; background: rgba(0,255,136,0.04); border: 1px solid rgba(0,255,136,0.15); border-radius: 6px; margin-top: 1rem; }
+  .residual-rule-dot { color: var(--green); font-size: 1rem; margin-top: 0.1rem; }
+  .residual-rule-text { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
+  .residual-rule-text strong { color: var(--green); }
+
+  /* CODE BLOCK */
+  .code-block { background: #060a14; border: 1px solid var(--border); border-radius: 6px; padding: 1.2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--text-dim); overflow-x: auto; margin: 1rem 0; }
+  .code-block .kw { color: #569cd6; }
+  .code-block .str { color: #ce9178; }
+  .code-block .comment { color: #4a6a4a; }
+  .code-block .num { color: #b5cea8; }
+  .code-block .fn { color: #dcdcaa; }
+
+  /* CHART */
+  .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin: 2rem 0; }
+  .chart-title { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(4,8,20,0.85); z-index: 999; backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; max-width: 640px; width: 100%; max-height: 80vh; overflow-y: auto; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.7); }
+  .modal-header { padding: 1.5rem 1.5rem 0; display: flex; justify-content: space-between; align-items: flex-start; }
+  .modal-title { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--accent); }
+  .modal-close { background: none; border: none; color: var(--text-dim); font-size: 1.3rem; cursor: pointer; padding: 0.2rem; line-height: 1; }
+  .modal-close:hover { color: var(--text-bright); }
+  .modal-body { padding: 1.2rem 1.5rem 1.5rem; font-size: 0.88rem; line-height: 1.7; color: var(--text); }
+  .modal-body h4 { color: var(--text-bright); font-size: 0.9rem; margin: 1rem 0 0.4rem; }
+  .modal-body ul { padding-left: 1.2rem; }
+  .modal-body li { margin-bottom: 0.4rem; color: var(--text-dim); }
+  .modal-body li strong { color: var(--text); }
+  .modal-tag { display: inline-block; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.25); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 3px; margin: 0.2rem; }
+
+  /* STATUS */
+  .status-bar { display: flex; gap: 1rem; flex-wrap: wrap; margin: 2rem 0; }
+  .status-item { display: flex; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.amber { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .status-dot.blue { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .status-label { color: var(--text-dim); }
+  .status-val { color: var(--text-bright); }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--text-dim); font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; }
+  footer span { color: var(--accent); }
+
+  @media (max-width: 700px) {
+    .medusa-grid { grid-template-columns: 1fr; }
+    .flow-nodes { justify-content: center; }
+    nav { padding: 1rem; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<script src="nexus-nav.js"></script>
+
+<!-- HERO -->
+<div class="hero container">
+  <div class="hero-tag">Infrastructure · Privacy · Sovereignty</div>
+  <h1>The NeXuS <span>Dark Stack</span></h1>
+  <p class="hero-sub">A modular, layered infrastructure that routes traffic across Tor, I2P, and Yggdrasil — invisible by design, unstoppable by architecture. Infrastructure is not a cost center. It is the economic engine.</p>
+  <div class="motto">Privacy is not a feature — it is the protocol.</div>
+</div>
+
+<!-- STATUS -->
+<div class="container">
+  <div class="status-bar">
+    <div class="status-item"><div class="status-dot green"></div><span class="status-label">Tor Exit Policy —</span><span class="status-val">Active</span></div>
+    <div class="status-item"><div class="status-dot green"></div><span class="status-label">I2P Tunnels —</span><span class="status-val">Bootstrap ~20min</span></div>
+    <div class="status-item"><div class="status-dot amber"></div><span class="status-label">Yggdrasil —</span><span class="status-val">Planned Phase 3</span></div>
+    <div class="status-item"><div class="status-dot blue"></div><span class="status-label">Medusa HAProxy —</span><span class="status-val">Domain Routing</span></div>
+    <div class="status-item"><div class="status-dot green"></div><span class="status-label">Ghost Gate —</span><span class="status-val">Kernel Enforced</span></div>
+  </div>
+</div>
+
+<!-- HYDRA STACK LAYERS -->
+<section>
+  <div class="container">
+    <div class="section-label">Architecture</div>
+    <h2>The Hydra Stack — 7 Layers</h2>
+    <div class="divider"></div>
+    <p style="color:var(--text-dim); font-size:0.9rem; margin-bottom:1.5rem;">Each layer is independently deployable. Click any layer for technical details.</p>
+
+    <div class="hydra-stack">
+      <div class="stack-layer" onclick="openModal('layer-ghost')">
+        <div class="layer-num">L1</div>
+        <div class="layer-body">
+          <div class="layer-name">Ghost Gate — nftables Kernel Firewall</div>
+          <div class="layer-desc">Default DROP policy. Cerberus 3-head authentication. Phantom chaff traffic. The first and last line of defense.</div>
+          <div class="layer-tags">
+            <span class="tag tag-blue">nftables</span>
+            <span class="tag tag-blue">default-drop</span>
+            <span class="tag tag-amber">Cerberus</span>
+            <span class="tag tag-purple">Phantom Chaff</span>
+          </div>
+        </div>
+        <div class="layer-arrow">›</div>
+      </div>
+
+      <div class="stack-layer" onclick="openModal('layer-medusa')">
+        <div class="layer-num">L2</div>
+        <div class="layer-body">
+          <div class="layer-name">Medusa Router — Smart Traffic Director</div>
+          <div class="layer-desc">HAProxy-based domain ACL router. Detects .onion, .i2p, .ygg destinations and routes to the correct dark transport. One entry point, three heads.</div>
+          <div class="layer-tags">
+            <span class="tag tag-blue">HAProxy</span>
+            <span class="tag tag-blue">domain-ACL</span>
+            <span class="tag tag-green">SOCKS5</span>
+            <span class="tag tag-purple">I2P SAM</span>
+          </div>
+        </div>
+        <div class="layer-arrow">›</div>
+      </div>
+
+      <div class="stack-layer" onclick="openModal('layer-tor')">
+        <div class="layer-num">L3</div>
+        <div class="layer-body">
+          <div class="layer-name">Tor Transport — 14-Eyes Excluded Routing</div>
+          <div class="layer-desc">ExcludeNodes set to 14-Eyes countries. Hidden service capability. .onion destinations routed here. Guard-only mode for maximum anonymity.</div>
+          <div class="layer-tags">
+            <span class="tag tag-purple">Tor</span>
+            <span class="tag tag-amber">ExcludeNodes</span>
+            <span class="tag tag-blue">.onion</span>
+            <span class="tag tag-green">Hidden Service</span>
+          </div>
+        </div>
+        <div class="layer-arrow">›</div>
+      </div>
+
+      <div class="stack-layer" onclick="openModal('layer-i2p')">
+        <div class="layer-num">L4</div>
+        <div class="layer-body">
+          <div class="layer-name">I2P Transport — Garlic Routing</div>
+          <div class="layer-desc">Bidirectional tunnels. .i2p destination routing. SAM protocol for application integration. Native home for DivaChain. 10-30min bootstrap.</div>
+          <div class="layer-tags">
+            <span class="tag tag-purple">I2P</span>
+            <span class="tag tag-purple">SAM Protocol</span>
+            <span class="tag tag-blue">.i2p</span>
+            <span class="tag tag-green">DivaChain-native</span>
+          </div>
+        </div>
+        <div class="layer-arrow">›</div>
+      </div>
+
+      <div class="stack-layer" onclick="openModal('layer-diva')">
+        <div class="layer-num">L5</div>
+        <div class="layer-body">
+          <div class="layer-name">DivaChain — I2P-Native Proof of Storage Ledger</div>
+          <div class="layer-desc">Permissioned Byzantine Fault Tolerant consensus. Runs natively over I2P. Namespace-based data model. PUT /tx confirmed. Powers NeXiuM settlement.</div>
+          <div class="layer-tags">
+            <span class="tag tag-green">DivaChain</span>
+            <span class="tag tag-blue">Proof of Storage</span>
+            <span class="tag tag-blue">I2P-native</span>
+            <span class="tag tag-amber">NeXiuM</span>
+          </div>
+        </div>
+        <div class="layer-arrow">›</div>
+      </div>
+
+      <div class="stack-layer" onclick="openModal('layer-nexium')">
+        <div class="layer-num">L6</div>
+        <div class="layer-body">
+          <div class="layer-name">NeXiuM — Native Value Settlement Layer</div>
+          <div class="layer-desc">NeXiuM is the internal economic unit. Earned by nodes, awarded via badges, spent within the ecosystem. Encrypted transfers, ephemeral keys, no payment history linkable. The network settles within itself.</div>
+          <div class="layer-tags">
+            <span class="tag tag-amber">NeXiuM</span>
+            <span class="tag tag-purple">Badge Multipliers</span>
+            <span class="tag tag-blue">Encrypted Transfers</span>
+            <span class="tag tag-green">Ephemeral Keys</span>
+          </div>
+        </div>
+        <div class="layer-arrow">›</div>
+      </div>
+
+      <div class="stack-layer" onclick="openModal('layer-ipfs')">
+        <div class="layer-num">L7</div>
+        <div class="layer-body">
+          <div class="layer-name">IPFS — Distributed Content Layer</div>
+          <div class="layer-desc">Content-addressed storage. AI characters, media, documentation — all pinned to IPFS. No central server can take it down. Kubo node, Privoxy proxied.</div>
+          <div class="layer-tags">
+            <span class="tag tag-blue">IPFS</span>
+            <span class="tag tag-blue">Kubo</span>
+            <span class="tag tag-green">Content-Addressed</span>
+            <span class="tag tag-purple">Privoxy</span>
+          </div>
+        </div>
+        <div class="layer-arrow">›</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEDUSA HEADS -->
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="section-label">Smart Routing</div>
+    <h2>Medusa — Three Heads, One Gate</h2>
+    <div class="divider"></div>
+    <p style="color:var(--text-dim); font-size:0.9rem; margin-bottom:1.5rem;">HAProxy reads the destination domain and routes automatically. Applications only need to know one SOCKS5 proxy.</p>
+
+    <div class="medusa-grid">
+      <div class="medusa-head" onclick="openModal('med-clearnet')">
+        <div class="head-icon">🌐</div>
+        <div class="head-title">Head 1 — Clearnet / Tor</div>
+        <div class="head-desc">Standard HTTPS traffic and .onion destinations. Tor SOCKS5 (127.0.0.1:9050) with 14-Eyes excluded exit nodes. Guard-only mode enforced.</div>
+        <div class="head-route">*.onion → 127.0.0.1:9050</div>
+      </div>
+      <div class="medusa-head" onclick="openModal('med-i2p')">
+        <div class="head-icon">🔀</div>
+        <div class="head-title">Head 2 — I2P Garlic</div>
+        <div class="head-desc">All .i2p destinations routed through I2P HTTP proxy (172.21.0.1:4444). SAM protocol available for advanced P2P applications including DivaChain.</div>
+        <div class="head-route">*.i2p → 172.21.0.1:4444</div>
+      </div>
+      <div class="medusa-head" onclick="openModal('med-ygg')">
+        <div class="head-icon">🕸️</div>
+        <div class="head-title">Head 3 — Yggdrasil Mesh</div>
+        <div class="head-desc">IPv6 mesh overlay network. End-to-end encrypted peer routing. .ygg destinations + 200::/7 IPv6 range. Phase 3 integration target for NeXuS mesh nodes.</div>
+        <div class="head-route">200::/7 → yggdrasil tun</div>
+      </div>
+    </div>
+
+    <table class="route-table">
+      <thead>
+        <tr><th>Destination Pattern</th><th>Transport</th><th>Port</th><th>Protocol</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>*.onion</td><td>Tor</td><td>9050</td><td>SOCKS5</td><td><span class="route-badge tag-green">LIVE</span></td></tr>
+        <tr><td>*.i2p</td><td>I2P HTTP Proxy</td><td>4444</td><td>HTTP</td><td><span class="route-badge tag-green">LIVE</span></td></tr>
+        <tr><td>SAM apps</td><td>I2P SAM</td><td>7656</td><td>TCP</td><td><span class="route-badge tag-green">LIVE</span></td></tr>
+        <tr><td>200::/7</td><td>Yggdrasil</td><td>—</td><td>IPv6</td><td><span class="route-badge tag-amber">PHASE 3</span></td></tr>
+        <tr><td>* (default)</td><td>Privoxy → Tor</td><td>8118</td><td>HTTP</td><td><span class="route-badge tag-green">LIVE</span></td></tr>
+        <tr><td>IRC, Gemini</td><td>3proxy</td><td>3128</td><td>SOCKS5</td><td><span class="route-badge tag-amber">PLANNED</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- INFRASTRUCTURE AS ECONOMY -->
+<section>
+  <div class="container">
+    <div class="section-label">Economic Engine</div>
+    <h2>Infrastructure IS the Business</h2>
+    <div class="divider"></div>
+    <p style="color:var(--text-dim); font-size:0.9rem; margin-bottom:0.5rem;">Every packet routed, every tunnel maintained, every relay node operated — this is productive economic activity that earns NeXiuM. The network pays the people who build it.</p>
+
+    <div class="economy-grid">
+      <div class="economy-card" onclick="openModal('econ-nodes')">
+        <div class="econ-label">RELAY NODES</div>
+        <div class="econ-value">∞</div>
+        <div class="econ-desc">Every NeXuS node that relays traffic earns NeXiuM tokens. Bandwidth contribution = economic contribution. No central entity captures the value.</div>
+      </div>
+      <div class="economy-card" onclick="openModal('econ-residual')">
+        <div class="econ-label">RESIDUAL PAYMENTS</div>
+        <div class="econ-value">∞%</div>
+        <div class="econ-desc">Contributors earn badges for accepted work. Badges multiply NeXiuM earning power and add governance weight — conditional on good standing. NFT creators earn residuals on every resale.</div>
+      </div>
+      <div class="economy-card" onclick="openModal('econ-proof')">
+        <div class="econ-label">PROOF OF SERVICE</div>
+        <div class="econ-desc">Zero-knowledge proofs of bandwidth, uptime, and transit. No trust required — math verifies contribution. DivaChain records the proof, NeXiuM pays the node.</div>
+      </div>
+      <div class="economy-card" onclick="openModal('econ-privacy')">
+        <div class="econ-label">PRIVACY PREMIUM</div>
+        <div class="econ-desc">Premium routing (high-anonymity paths, dedicated circuits, zero-log transit) commands higher NeXiuM fees. Stealthy paths are premium infrastructure.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESIDUAL PAYMENT SYSTEM -->
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="section-label">Residual Engine</div>
+    <h2>How Contributors Get Paid</h2>
+    <div class="divider"></div>
+
+    <div class="residual-flow">
+      <h3 style="margin-bottom:0.5rem; color:var(--text-bright);">Infrastructure Transaction Flow</h3>
+      <p style="font-size:0.82rem; color:var(--text-dim); margin-bottom:1rem;">Every time a user routes traffic through NeXuS infrastructure, a micro-payment is atomically split and distributed to all contributors in the path.</p>
+
+      <div class="flow-nodes">
+        <div class="flow-node" onclick="openModal('flow-user')">
+          <div class="flow-node-icon">👤</div>
+          <div class="flow-node-name">User</div>
+          <div class="flow-node-sub">sends NeXiuM</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="openModal('flow-ghost')">
+          <div class="flow-node-icon">🔒</div>
+          <div class="flow-node-name">Ghost Gate</div>
+          <div class="flow-node-sub">firewall node</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="openModal('flow-medusa')">
+          <div class="flow-node-icon">🐍</div>
+          <div class="flow-node-name">Medusa</div>
+          <div class="flow-node-sub">routing node</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="openModal('flow-transport')">
+          <div class="flow-node-icon">🌐</div>
+          <div class="flow-node-name">Transport</div>
+          <div class="flow-node-sub">Tor/I2P/Ygg</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="openModal('flow-diva')">
+          <div class="flow-node-icon">⛓️</div>
+          <div class="flow-node-name">DivaChain</div>
+          <div class="flow-node-sub">records proof</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node" onclick="openModal('flow-split')">
+          <div class="flow-node-icon">💎</div>
+          <div class="flow-node-name">Split + Pay</div>
+          <div class="flow-node-sub">NeXiuM settlement</div>
+        </div>
+      </div>
+
+      <div class="residual-rule">
+        <div class="residual-rule-dot">◆</div>
+        <div class="residual-rule-text"><strong>Badge Earning Power:</strong> Contributors earn badges for accepted work. Each badge applies a multiplier to the node's NeXiuM earning rate — active as long as the node remains in good standing.</div>
+      </div>
+      <div class="residual-rule">
+        <div class="residual-rule-dot">◆</div>
+        <div class="residual-rule-text"><strong>ZKP Proof of Service:</strong> Contribution is verified by zero-knowledge proof — bandwidth relayed, uptime maintained, tunnels established. <strong>No trust, just math.</strong></div>
+      </div>
+      <div class="residual-rule">
+        <div class="residual-rule-dot">◆</div>
+        <div class="residual-rule-text"><strong>Encrypted NeXiuM Transfers:</strong> Each settlement uses ephemeral keys derived from the PERMITTL master key. No payment history, no linking, no surveillance — private by architecture.</div>
+      </div>
+      <div class="residual-rule">
+        <div class="residual-rule-dot">◆</div>
+        <div class="residual-rule-text"><strong>Network in debt to nodes, not middlemen.</strong> There is no platform fee extracted by a corporation. The infrastructure IS the platform. Builders ARE the shareholders.</div>
+      </div>
+    </div>
+
+    <div class="code-block">
+<span class="comment">// DivaChain namespace: residual payment proof record</span>
+{
+  <span class="str">"command"</span>: <span class="str">"data"</span>,
+  <span class="str">"ns"</span>: <span class="str">"nexus:infra:residual:ghost-gate"</span>,
+  <span class="str">"d"</span>: {
+    <span class="str">"builder"</span>: <span class="str">"nexus:node:0x7a4f..."</span>,
+    <span class="str">"component"</span>: <span class="str">"ghost-gate-v1"</span>,
+    <span class="str">"tx_count"</span>: <span class="num">847293</span>,
+    <span class="str">"proof"</span>: <span class="str">"zkp:bandwidth:0x9c3e..."</span>,  <span class="comment">// ZK proof of service</span>
+    <span class="str">"badge_rate"</span>: <span class="str">"0.01 NXM multiplier per 1000 tx"</span>,
+    <span class="str">"settlement"</span>: <span class="str">"nexium:encrypted:0x..."</span>  <span class="comment">// ephemeral key</span>
+  }
+}
+    </div>
+  </div>
+</section>
+
+<!-- CHART -->
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="chart-wrap">
+      <div class="chart-title">// NeXuS Infrastructure Value Distribution — NeXiuM Flow</div>
+      <canvas id="infraChart" height="160"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- INFOGRAPHIC -->
+<section>
+  <div class="container">
+    <div class="section-label">// Infographic</div>
+    <h2 style="margin-bottom:1.5rem;">The Sovereign Circuit</h2>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <img src="img/sovereign-circuit.png" alt="The Sovereign Circuit — Journey Through the NeXuS Dark Stack" style="width:100%;display:block;">
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p><span>NeXuS Dark Stack</span> // Sane · Simple · Secure · Stealthy · Beautiful</p>
+  <p style="margin-top:0.5rem; font-size:0.72rem; opacity:0.5;">Together Everyone Achieves More — for individual freedom // meWEwowow</p>
+</footer>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modalContent">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const MODALS = {
+  'layer-ghost': {
+    title: 'L1 — Ghost Gate: nftables Kernel Firewall',
+    body: `<p>The Ghost Gate is the outermost defensive perimeter of every NeXuS node. It operates at the kernel level using nftables — not iptables, not application-layer filtering.</p>
+    <h4>Core Principles</h4>
+    <ul>
+      <li><strong>Default DROP policy</strong> — nothing enters unless explicitly permitted. Zero implicit trust.</li>
+      <li><strong>Cerberus 3-head auth</strong> — three-factor authentication before any privileged access. Each "head" is an independent verification channel.</li>
+      <li><strong>Phantom chaff</strong> — decoy traffic generation to confuse traffic analysis. Makes node activity patterns unreadable.</li>
+      <li><strong>Noise sink</strong> — suspicious traffic is silently absorbed, not rejected. Attackers see no response, not a firewall error.</li>
+    </ul>
+    <h4>Economic Contribution</h4>
+    <p>Ghost Gate nodes earn NeXiuM for every verified packet inspection event. Infrastructure builders receive perpetual royalties on every transaction that passes through their firewall deployment.</p>
+    <div style="margin-top:1rem;">
+      <span class="modal-tag">nftables</span><span class="modal-tag">default-drop</span><span class="modal-tag">Cerberus</span><span class="modal-tag">Phantom</span><span class="modal-tag">ZKP-verified</span>
+    </div>`
+  },
+  'layer-medusa': {
+    title: 'L2 — Medusa Router: Smart Traffic Director',
+    body: `<p>Medusa is the intelligence layer that routes traffic to the correct dark transport without requiring applications to know which network they're on.</p>
+    <h4>How It Works</h4>
+    <ul>
+      <li><strong>Domain ACL inspection</strong> — reads destination hostname and applies routing rules</li>
+      <li><strong>*.onion</strong> → Tor SOCKS5 (9050) — Head 1</li>
+      <li><strong>*.i2p</strong> → I2P HTTP Proxy (4444) — Head 2</li>
+      <li><strong>200::/7</strong> → Yggdrasil tunnel (Head 3, Phase 3)</li>
+      <li><strong>Default</strong> → Privoxy → Tor for clearnet with anonymity</li>
+    </ul>
+    <h4>Datawookie Attribution</h4>
+    <p>The Medusa routing architecture was named for and inspired by the datawookie contributor model. Complex multi-headed routing, single unified interface.</p>
+    <h4>Economic Role</h4>
+    <p>Medusa routing nodes earn NeXiuM per routing decision. High-throughput nodes with verified uptime earn priority fees from users who require reliable routing.</p>
+    <div style="margin-top:1rem;">
+      <span class="modal-tag">HAProxy</span><span class="modal-tag">domain-ACL</span><span class="modal-tag">SOCKS5</span><span class="modal-tag">multi-head</span>
+    </div>`
+  },
+  'layer-tor': {
+    title: 'L3 — Tor: 14-Eyes Excluded Routing',
+    body: `<p>NeXuS uses Tor with a strict ExcludeNodes configuration — all exit nodes in 14-Eyes surveillance alliance countries are excluded.</p>
+    <h4>Configuration</h4>
+    <ul>
+      <li><strong>ExcludeNodes {us},{gb},{ca},{au},{nz},{de},{fr},{dk},{nl},{no},{be},{it},{es},{se}</strong></li>
+      <li><strong>Guard-only mode</strong> for maximum long-term anonymity (prevents guard churn attacks)</li>
+      <li><strong>Hidden service mode</strong> available for NeXuS services exposed as .onion addresses</li>
+      <li><strong>StrictNodes 1</strong> — never use excluded nodes even if no others available</li>
+    </ul>
+    <h4>Integration with Medusa</h4>
+    <p>Medusa routes all *.onion traffic and default clearnet traffic through Tor. Privoxy provides HTTP proxy compatibility (port 8118) wrapping the Tor SOCKS5 (port 9050).</p>
+    <div style="margin-top:1rem;">
+      <span class="modal-tag">ExcludeNodes</span><span class="modal-tag">.onion</span><span class="modal-tag">hidden-service</span><span class="modal-tag">14-Eyes-free</span>
+    </div>`
+  },
+  'layer-i2p': {
+    title: 'L4 — I2P: Garlic Routing Layer',
+    body: `<p>I2P (Invisible Internet Project) uses garlic routing — bundling multiple messages together for simultaneous delivery, making traffic analysis exponentially harder than onion routing.</p>
+    <h4>Bootstrap Process</h4>
+    <ul>
+      <li>First start: <strong>10-30 minutes</strong> to establish tunnel network (normal)</li>
+      <li>Subsequent starts: ~2-5 minutes</li>
+      <li>DivaChain has 120-second API window during P2P bootstrap phase</li>
+    </ul>
+    <h4>SAM Protocol</h4>
+    <p>The Simple Anonymous Messaging (SAM) protocol (port 7656) allows any application to create I2P connections programmatically. DivaChain uses SAM natively — it cannot operate without an I2P SAM bridge.</p>
+    <h4>NeXuS I2P Services</h4>
+    <ul>
+      <li>DivaChain P2P consensus (native I2P)</li>
+      <li>NeXuS Jitsi Meet (.i2p tunnel, ~/git/nexus-jitsi/)</li>
+      <li>IRC and Gemini routing via 3proxy (planned)</li>
+    </ul>
+    <div style="margin-top:1rem;">
+      <span class="modal-tag">garlic-routing</span><span class="modal-tag">SAM:7656</span><span class="modal-tag">DivaChain</span><span class="modal-tag">Jitsi</span>
+    </div>`
+  },
+  'layer-diva': {
+    title: 'L5 — DivaChain: I2P-Native Proof of Storage Ledger',
+    body: `<p>DivaChain is the settlement and record layer for all NeXuS economic activity. It runs natively over I2P — not bolted on, deeply embedded.</p>
+    <h4>Technical Specs</h4>
+    <ul>
+      <li><strong>Proof of Storage</strong> — CAP-aware, partition-tolerant, no mining, instant finality</li>
+      <li><strong>Namespace model</strong> — data organized as <code>nexus:category:type:id</code></li>
+      <li><strong>PUT /tx confirmed</strong> — HTTP 204 response. Transaction system working.</li>
+      <li><strong>Quorum required</strong> — transactions need majority peer votes to commit</li>
+    </ul>
+    <h4>NeXiuM Namespaces</h4>
+    <ul>
+      <li><code>nexus:infra:residual:*</code> — infrastructure royalty records</li>
+      <li><code>nexus:node:*</code> — node registration and reputation</li>
+      <li><code>nexus:token:*</code> — NeXiuM balance proofs</li>
+      <li><code>nexus:zkp:*</code> — zero-knowledge service proofs</li>
+    </ul>
+    <div style="margin-top:1rem;">
+      <span class="modal-tag">Proof of Storage</span><span class="modal-tag">I2P-native</span><span class="modal-tag">PUT /tx</span><span class="modal-tag">namespace</span><span class="modal-tag">NeXiuM</span>
+    </div>`
+  },
+  'layer-nexium': {
+    title: 'L6 — NeXiuM: Native Value Settlement Layer',
+    body: `<p>NeXiuM is the NeXuS ecosystem's internal contribution token and value layer. Earned by nodes for service, awarded via badges for contributions, spent within the network — no external currency required.</p>
+    <h4>How NeXiuM Flows</h4>
+    <ul>
+      <li><strong>Earned by nodes</strong> — routing, relaying, uptime, and service contribute to earning rate</li>
+      <li><strong>Badge multipliers</strong> — accepted contributions unlock badges that multiply earning power</li>
+      <li><strong>Vote weight</strong> — top contributor badges add governance influence, max-capped</li>
+      <li><strong>NFT residuals</strong> — creators earn NeXiuM on every resale of their work</li>
+    </ul>
+    <h4>Privacy Architecture</h4>
+    <ul>
+      <li><strong>Ephemeral keys</strong> — each settlement uses a fresh key derived from the PERMITTL master</li>
+      <li><strong>Encrypted transfers</strong> — amounts concealed, no payment history linkable</li>
+      <li><strong>I2P-routed</strong> — all NeXiuM transactions travel through the anonymity layer</li>
+    </ul>
+    <div style="margin-top:1rem;">
+      <span class="modal-tag">NeXiuM</span><span class="modal-tag">badges</span><span class="modal-tag">ephemeral-keys</span><span class="modal-tag">I2P-native</span><span class="modal-tag">NFT-residuals</span>
+    </div>`
+  },
+  'layer-ipfs': {
+    title: 'L7 — IPFS: Distributed Content Layer',
+    body: `<p>IPFS (InterPlanetary File System) provides content-addressed, distributed storage. Content is identified by its hash — not by where it lives. No server to take down.</p>
+    <h4>NeXuS IPFS Architecture</h4>
+    <ul>
+      <li><strong>Kubo node</strong> — local IPFS daemon, proxied through Privoxy for anonymity</li>
+      <li><strong>AI Characters</strong> — character definitions, memories, and media pinned to IPFS</li>
+      <li><strong>Documentation</strong> — all NeXuS docs available via IPFS CIDs</li>
+      <li><strong>Easter Eggs</strong> — multi-level scavenger hunt culminates on IPFS</li>
+    </ul>
+    <h4>Censorship Resistance</h4>
+    <p>Content pinned to IPFS cannot be removed by any single party. Once a node pins it, it exists. NeXuS infrastructure nodes earn NeXiuM for pinning and serving content.</p>
+    <div style="margin-top:1rem;">
+      <span class="modal-tag">IPFS</span><span class="modal-tag">Kubo</span><span class="modal-tag">content-hash</span><span class="modal-tag">Privoxy</span><span class="modal-tag">pin-earn</span>
+    </div>`
+  },
+  'med-clearnet': {
+    title: 'Medusa Head 1 — Clearnet / Tor Routing',
+    body: `<p>All standard HTTPS traffic and .onion destinations are handled by the Tor head.</p>
+    <h4>Configuration</h4>
+    <ul>
+      <li>SOCKS5 proxy: 127.0.0.1:9050 (Tor daemon)</li>
+      <li>HTTP proxy: 127.0.0.1:8118 (Privoxy → Tor)</li>
+      <li>ExcludeNodes: all 14-Eyes jurisdictions</li>
+      <li>Applications set proxy to Medusa (172.21.0.1:1080), routing is automatic</li>
+    </ul>
+    <p>Applications never need to know they're using Tor. They see one SOCKS5 endpoint. Medusa handles the rest.</p>`
+  },
+  'med-i2p': {
+    title: 'Medusa Head 2 — I2P Garlic Routing',
+    body: `<p>All .i2p destinations and applications requiring I2P SAM protocol are handled here.</p>
+    <h4>Configuration</h4>
+    <ul>
+      <li>HTTP proxy: 172.21.0.1:4444 (I2P HTTP proxy)</li>
+      <li>SAM bridge: 172.21.0.1:7656 (for P2P apps like DivaChain)</li>
+      <li>I2P containers run in Podman on nexus-i2p-net (172.19.75.0/24)</li>
+      <li>divax/i2p:current image (HTTP on 172.19.75.11)</li>
+    </ul>
+    <p>DivaChain requires I2P SAM — it is not optional. NeXuS has this built into the infrastructure stack from day one.</p>`
+  },
+  'med-ygg': {
+    title: 'Medusa Head 3 — Yggdrasil Mesh',
+    body: `<p>Yggdrasil is an encrypted IPv6 overlay mesh network. Unlike Tor and I2P, it is a full network layer — not just a routing protocol.</p>
+    <h4>Why Yggdrasil</h4>
+    <ul>
+      <li><strong>End-to-end encrypted</strong> at the network layer (not application layer)</li>
+      <li><strong>Decentralized routing</strong> — no central directory, no bootstrap servers</li>
+      <li><strong>Self-organizing</strong> — nodes find each other and route around failures automatically</li>
+      <li><strong>IPv6 native</strong> — every node gets a cryptographically derived 200::/7 address</li>
+    </ul>
+    <h4>NeXuS Phase 3 Plans</h4>
+    <p>Yggdrasil will form the backbone of the NeXuS mesh node network — a private internet for NeXuS participants. Node discovery, AI routing, and infrastructure payments over the Yggdrasil mesh.</p>
+    <div style="margin-top:1rem;"><span class="modal-tag">Phase 3</span><span class="modal-tag">IPv6 mesh</span><span class="modal-tag">E2E encrypted</span><span class="modal-tag">200::/7</span></div>`
+  },
+  'econ-nodes': {
+    title: 'Relay Nodes — Infrastructure as Income',
+    body: `<p>Every NeXuS node that participates in routing earns NeXiuM. This is not optional charity — it is the economic model.</p>
+    <h4>What Earns</h4>
+    <ul>
+      <li><strong>Bandwidth relayed</strong> — per MB of traffic routed</li>
+      <li><strong>Uptime maintained</strong> — per hour of verified availability</li>
+      <li><strong>Tunnels established</strong> — per I2P/Tor circuit created for users</li>
+      <li><strong>Ghost Gate enforcement</strong> — per packet filtered/verified</li>
+      <li><strong>Content pinned</strong> — per IPFS pin-hour on NeXuS content</li>
+    </ul>
+    <p>The more infrastructure you run, the more you earn. The more you earn, the more infrastructure you can run. This is a positive feedback loop that grows the network.</p>`
+  },
+  'econ-residual': {
+    title: 'Badge System — Contribution Earns Power',
+    body: `<p>Accepted contributions to NeXuS earn badges. Badges are permanent recognition of quality work — and they multiply your node's earning power as long as you maintain good standing.</p>
+    <h4>How Badges Work</h4>
+    <ul>
+      <li><strong>Earn a badge</strong> — contributions accepted into NeXuS unlock tiered badges</li>
+      <li><strong>Earning multiplier</strong> — each badge adds a % boost to NeXiuM earning rate</li>
+      <li><strong>Vote weight</strong> — top badges add governance weight, max-capped, wealth cannot buy this</li>
+      <li><strong>Good standing</strong> — badge benefits active while node is online and compliant</li>
+    </ul>
+    <h4>NFT Creator Residuals</h4>
+    <p>When an NFT is sold on NeXuS, the original creator receives NeXiuM on every resale — automatic via smart contract. This is product-level royalty, separate from the badge system.</p>`
+  },
+  'econ-proof': {
+    title: 'Zero-Knowledge Proof of Service',
+    body: `<p>Traditional payment systems require trust. NeXuS requires math.</p>
+    <h4>What ZKP Proves</h4>
+    <ul>
+      <li>Bandwidth was relayed (without revealing whose traffic)</li>
+      <li>Node was online for a specific time period (without revealing location)</li>
+      <li>Transaction was processed correctly (without revealing transaction content)</li>
+      <li>Content was served (without revealing what or to whom)</li>
+    </ul>
+    <h4>DivaChain + ZKP</h4>
+    <p>The proof is submitted to DivaChain as a namespace record. Proof of Storage consensus validates the proof. NeXiuM is minted and sent to the node's registered wallet.</p>
+    <p>No auditors. No middlemen. No "trust us." The math speaks.</p>`
+  },
+  'econ-privacy': {
+    title: 'Privacy Premium Tiers',
+    body: `<p>Not all routing is equal. Higher anonymity costs more — and that premium goes to the operators who provide it.</p>
+    <h4>Service Tiers</h4>
+    <ul>
+      <li><strong>Standard:</strong> Basic Tor routing, 1x NeXiuM rate</li>
+      <li><strong>Enhanced:</strong> Tor + I2P double-routing, 2x rate</li>
+      <li><strong>Premium:</strong> Triple-hop, dedicated circuit, zero-log, 5x rate</li>
+      <li><strong>Enterprise:</strong> Private NeXuS mesh via Yggdrasil, custom rate</li>
+    </ul>
+    <p>Premium tier operators earn significantly more per transaction. Running a high-reliability, high-anonymity node is a viable business within the NeXuS ecosystem.</p>`
+  },
+  'flow-user': { title: 'Flow: User Initiates Transaction', body: '<p>The user selects a routing tier and submits NeXiuM as payment. The NeXiuM is locked in a smart contract on DivaChain pending delivery verification. If the transaction fails, the NeXiuM is returned automatically — no support ticket needed.</p>' },
+  'flow-ghost': { title: 'Flow: Ghost Gate Processing', body: '<p>The packet passes through Ghost Gate inspection. The Ghost Gate node logs a ZKP proof of processing to DivaChain (<code>nexus:infra:residual:ghost-gate</code>). This proof is what earns the Ghost Gate builder their residual payment.</p>' },
+  'flow-medusa': { title: 'Flow: Medusa Routing Decision', body: '<p>Medusa inspects the destination domain and selects the appropriate transport. The routing decision is logged (anonymized) to DivaChain. The Medusa node operator earns NeXiuM for the routing service.</p>' },
+  'flow-transport': { title: 'Flow: Dark Transport', body: '<p>Traffic is encrypted and sent through the selected dark transport (Tor/I2P/Yggdrasil). Transport relay nodes earn NeXiuM for every byte relayed. Exit nodes earn more due to higher exposure risk.</p>' },
+  'flow-diva': { title: 'Flow: DivaChain Records Proof', body: '<p>DivaChain receives ZKP proofs from each infrastructure component in the path. Proof of Storage consensus validates the proofs. The full transaction path is recorded — anonymously — in the distributed ledger.</p>' },
+  'flow-split': { title: 'Flow: Atomic Split and NeXiuM Settlement', body: '<p>Once proofs are validated, the locked NeXiuM is atomically split according to each infrastructure component in the path. NeXiuM flows to each contributor\'s encrypted address. Badge multipliers are applied to contributor earnings. The entire settlement is private, verified, and instant.</p><p style="margin-top:0.8rem; color:var(--green);">This is the heart of the NeXuS economic engine.</p>' },
+};
+
+function openModal(key) {
+  const m = MODALS[key];
+  if (!m) return;
+  document.getElementById('modalTitle').textContent = m.title;
+  document.getElementById('modalBody').innerHTML = m.body;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Chart
+const ctx = document.getElementById('infraChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['Ghost Gate\n(L1)', 'Medusa\nRouter (L2)', 'Tor\nTransport (L3)', 'I2P\nGarlic (L4)', 'DivaChain\nLedger (L5)', 'NeXiuM\nValue (L6)', 'IPFS\nContent (L7)'],
+    datasets: [{
+      label: 'NeXiuM Earning Potential (relative)',
+      data: [85, 70, 90, 75, 60, 55, 65],
+      backgroundColor: ['rgba(0,212,255,0.3)','rgba(123,94,167,0.3)','rgba(0,255,136,0.3)','rgba(255,179,71,0.3)','rgba(0,212,255,0.25)','rgba(255,179,71,0.25)','rgba(0,255,136,0.25)'],
+      borderColor: ['#00d4ff','#7b5ea7','#00ff88','#ffb347','#00d4ff','#ffb347','#00ff88'],
+      borderWidth: 1,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: '#6a8aaa', font: { family: 'JetBrains Mono', size: 11 } } }
+    },
+    scales: {
+      x: { ticks: { color: '#6a8aaa', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: 'rgba(30,58,95,0.4)' } },
+      y: { ticks: { color: '#6a8aaa', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: 'rgba(30,58,95,0.4)' }, max: 100 }
+    }
+  }
+});
+</script>
+</body>
+</html>

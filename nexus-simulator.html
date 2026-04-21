@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXuS Simulator — Live Stack Dashboard</title>
+<style>
+:root {
+  --green:  #00ff88;
+  --pink:   #ff6eb4;
+  --blue:   #00d4ff;
+  --purple: #7b5ea7;
+  --mauve:  #c4a4c8;
+  --gold:   #ffd700;
+  --silver: #c0d4e8;
+  --red:    #ff3355;
+  --orange: #ff8c00;
+  --bg:     #08080f;
+  --bg2:    #0f0f1a;
+  --bg3:    #161625;
+  --text:   #e0e0f0;
+  --dim:    #666;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+#snow { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; opacity:.12; }
+
+/* NAV */
+nav {
+  position:sticky; top:0;
+  background: rgba(8,8,15,.97);
+  border-bottom: 1px solid var(--purple);
+  padding: .5rem 1.5rem;
+  display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+  z-index:200;
+}
+nav .logo { font-size:1rem; font-weight:900; color:var(--green); letter-spacing:2px; }
+nav a { color:var(--dim); text-decoration:none; font-size:.7rem; letter-spacing:1px; text-transform:uppercase; transition:color .2s; }
+nav a:hover { color:var(--green); }
+nav a.active { color:var(--pink); }
+
+/* HERO */
+.hero {
+  text-align:center;
+  padding:3rem 1rem 1.5rem;
+  position:relative; z-index:1;
+  background: radial-gradient(ellipse at 50% 0%, rgba(123,94,167,.2) 0%, transparent 65%);
+}
+.hero-title {
+  font-size: clamp(2rem,8vw,5rem);
+  font-weight:900; letter-spacing:3px; font-style:italic;
+  background: linear-gradient(135deg, var(--green), var(--blue), var(--pink), var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  margin-bottom:.3rem;
+}
+.hero-sub { font-size:.8rem; color:var(--mauve); letter-spacing:4px; text-transform:uppercase; margin-bottom:1.5rem; }
+
+/* SUIT-TO-NINJA SLIDER */
+.stealth-bar {
+  max-width:800px; margin:0 auto 2rem;
+  background:var(--bg2); border:1px solid var(--purple); border-radius:8px;
+  padding:1.2rem 1.5rem;
+  position:relative; z-index:1;
+}
+.stealth-label-row {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:.6rem;
+}
+.stealth-left  { font-size:.8rem; color:var(--silver); }
+.stealth-right { font-size:.8rem; color:var(--green); }
+.stealth-name  { font-size:1rem; font-weight:bold; color:var(--gold); letter-spacing:2px; text-align:center; }
+.stealth-track {
+  position:relative; height:10px;
+  background: linear-gradient(90deg, #3a3a4a, var(--purple), var(--pink), var(--green));
+  border-radius:5px; margin-bottom:.5rem; cursor:pointer;
+}
+input#stealth {
+  -webkit-appearance:none; width:100%; height:10px;
+  background:transparent; position:relative; z-index:2; cursor:pointer;
+  margin:0;
+}
+input#stealth::-webkit-slider-thumb {
+  -webkit-appearance:none; width:22px; height:22px;
+  background:var(--gold); border-radius:50%;
+  border:2px solid #fff;
+  box-shadow:0 0 12px var(--gold);
+}
+.stealth-levels {
+  display:flex; justify-content:space-between;
+  font-size:.6rem; color:var(--dim); letter-spacing:1px; text-transform:uppercase;
+}
+
+/* MAIN GRID */
+.grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+  gap:.8rem;
+  padding:.5rem 1rem 3rem;
+  max-width:1400px; margin:0 auto;
+  position:relative; z-index:1;
+}
+.widget {
+  background:var(--bg2);
+  border:1px solid rgba(123,94,167,.35);
+  border-radius:6px;
+  padding:1rem;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .3s;
+}
+.widget.active  { border-color:var(--green); }
+.widget.warning { border-color:var(--orange); }
+.widget.alert   { border-color:var(--red); }
+.widget::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--accent, var(--purple));
+}
+.widget.w2 { grid-column:span 2; }
+.widget.w3 { grid-column:span 3; }
+
+.w-label {
+  font-size:.6rem; letter-spacing:3px; text-transform:uppercase;
+  color:var(--dim); margin-bottom:.3rem;
+}
+.w-title {
+  font-size:1rem; font-weight:bold; margin-bottom:.8rem;
+}
+.w-status {
+  display:inline-flex; align-items:center; gap:.4rem;
+  font-size:.7rem; letter-spacing:1px; text-transform:uppercase;
+  padding:.2rem .6rem; border-radius:3px; margin-bottom:.8rem;
+}
+.dot {
+  width:7px; height:7px; border-radius:50%;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+.status-on  { background:rgba(0,255,136,.1); color:var(--green); border:1px solid var(--green); }
+.status-on .dot { background:var(--green); }
+.status-off { background:rgba(100,100,120,.1); color:var(--dim); border:1px solid #333; }
+.status-off .dot { background:#444; animation:none; }
+.status-warn { background:rgba(255,140,0,.1); color:var(--orange); border:1px solid var(--orange); }
+.status-warn .dot { background:var(--orange); }
+
+/* COUNTER */
+.big-num {
+  font-size:2rem; font-weight:900; line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.big-unit { font-size:.7rem; color:var(--dim); letter-spacing:2px; margin-left:.3rem; }
+.sub-stat  { font-size:.72rem; color:var(--dim); margin-top:.3rem; }
+
+/* BARS */
+.bar-row { margin:.4rem 0; }
+.bar-label { display:flex; justify-content:space-between; font-size:.68rem; color:var(--dim); margin-bottom:.2rem; }
+.bar-track { height:5px; background:#1a1a2a; border-radius:3px; overflow:hidden; }
+.bar-fill  { height:100%; border-radius:3px; transition:width .5s ease; }
+
+/* CIRCUIT LIST */
+.circuit-list { list-style:none; }
+.circuit-list li {
+  display:flex; align-items:center; gap:.5rem;
+  font-size:.75rem; color:var(--silver);
+  padding:.3rem 0; border-bottom:1px solid rgba(255,255,255,.04);
+}
+.circuit-list li:last-child { border:none; }
+.c-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* PACKET LOG */
+.packet-log {
+  height:110px; overflow:hidden;
+  font-size:.65rem; line-height:1.7;
+  color:var(--dim);
+}
+.packet-log .entry { animation:slide-in .3s ease; }
+@keyframes slide-in { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:none} }
+
+/* CONFIDENCE METER */
+.conf-meter { position:relative; height:16px; background:#1a1a2a; border-radius:4px; overflow:hidden; margin:.5rem 0; }
+.conf-fill  { height:100%; border-radius:4px; transition:width .8s ease, background .8s ease; }
+.conf-label { font-size:.68rem; color:var(--dim); display:flex; justify-content:space-between; }
+
+/* TRANSACTION */
+.tx-flow {
+  display:flex; align-items:center; gap:.4rem;
+  font-size:.68rem; margin:.5rem 0; flex-wrap:wrap;
+}
+.tx-node {
+  background:var(--bg3); border:1px solid var(--purple);
+  border-radius:4px; padding:.2rem .5rem;
+  font-size:.65rem; white-space:nowrap;
+}
+.tx-arrow { color:var(--green); font-size:.8rem; }
+.tx-burn  { color:var(--red); font-weight:bold; }
+
+/* NEXIUM */
+.nexium-num {
+  font-size:2.5rem; font-weight:900;
+  background: linear-gradient(135deg,var(--gold),var(--orange));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ON AIR */
+.on-air-widget {
+  text-align:center; padding:1rem;
+  --accent:var(--red);
+}
+.on-air-big {
+  font-size:2.5rem; font-weight:900; letter-spacing:4px;
+  animation:blink-text 1.5s ease-in-out infinite;
+}
+.on-air-big.live { color:var(--red); }
+.on-air-big.offline { color:#333; animation:none; }
+@keyframes blink-text { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* CANVAS widgets */
+canvas.w-canvas { width:100%; border-radius:4px; display:block; }
+
+/* TOPOLOGY */
+#topo { background:var(--bg3); border-radius:4px; }
+
+/* OPENSNITCH */
+.snitch-list { list-style:none; }
+.snitch-list li {
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:.68rem; padding:.25rem 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.snitch-list li:last-child { border:none; }
+.snitch-app  { color:var(--silver); }
+.snitch-dest { color:var(--dim); font-size:.62rem; }
+.snitch-btn  {
+  font-size:.58rem; letter-spacing:1px; padding:.1rem .4rem;
+  border-radius:3px; border:none; cursor:pointer; font-family:inherit;
+  text-transform:uppercase;
+}
+.btn-allow { background:rgba(0,255,136,.15); color:var(--green); border:1px solid var(--green); }
+.btn-deny  { background:rgba(255,51,85,.15);  color:var(--red);   border:1px solid var(--red); }
+
+/* GHOST GATE */
+.gate-stat { display:flex; justify-content:space-between; align-items:center; padding:.3rem 0; border-bottom:1px solid rgba(255,255,255,.04); font-size:.72rem; }
+.gate-stat:last-child { border:none; }
+.gate-val { font-weight:bold; font-variant-numeric:tabular-nums; }
+
+@media(max-width:700px) { .w2,.w3 { grid-column:span 1; } }
+</style>
+</head>
+<body>
+
+<canvas id="snow"></canvas>
+
+<script src="nexus-nav.js"></script>
+
+<!-- MOIDGIT TEXT CORE: readable without JS, in Lynx, over Tor, on I2P -->
+<noscript>
+<style>
+  .text-core { display:block !important; max-width:720px; margin:2rem auto; padding:1.5rem 2rem; font-family:sans-serif; color:#c8d8e8; line-height:1.7; }
+  .text-core h1 { font-size:1.6rem; margin-bottom:0.5rem; color:#e8f4ff; }
+  .text-core h2 { font-size:1.1rem; margin:1.2rem 0 0.4rem; color:#00d4ff; }
+  .text-core p { margin-bottom:0.8rem; color:#8aabbf; }
+  .text-core ul { padding-left:1.5rem; margin-bottom:0.8rem; }
+  .text-core a { color:#00d4ff; }
+</style>
+<div class="text-core">
+  <h1>NeXuS Simulator — Live Stack Dashboard</h1>
+  <p>The Simulator is a live visualization of a sovereign NeXuS node running the full privacy stack. It shows in real time what activating each layer does to your threat exposure.</p>
+  <h2>Suit-to-Ninja Stealth Slider</h2>
+  <p>Five levels from Clearnet (no protection) to Ninja (full dark stack active). Each step activates additional privacy layers and reduces your NeXiuM earning rate — you pay for privacy with reduced exposure to the network economy.</p>
+  <h2>Stack Layers</h2>
+  <ul>
+    <li><strong>Tor</strong> — onion routing, 3-hop minimum. Baseline anonymity.</li>
+    <li><strong>I2P</strong> — garlic routing, native darknet. Destination-based addressing.</li>
+    <li><strong>Reticulum</strong> — mesh networking, works without internet infrastructure.</li>
+    <li><strong>Snowflake</strong> — censorship circumvention bridge. Connects from restricted networks.</li>
+    <li><strong>Ghost Gate</strong> — kernel firewall, default DROP policy.</li>
+    <li><strong>FanTOM</strong> — phantom traffic obfuscation. You become noise.</li>
+  </ul>
+  <h2>NeXiuM Earnings</h2>
+  <p>Nodes earn NeXiuM for contributing routing capacity. Higher stealth = lower contribution = lower earnings. The simulator shows this tradeoff in real time.</p>
+  <p><a href="nexus-darkstack.html">Full Dark Stack architecture →</a> · <a href="nexus-fantom-widget.html">FanTOM widget →</a></p>
+</div>
+</noscript>
+
+<div class="hero">
+  <h1 class="hero-title">NeXuS Simulator</h1>
+  <div class="hero-sub">Live Stack Dashboard — Simulated Sovereign Node</div>
+</div>
+
+<!-- SUIT TO NINJA -->
+<div class="stealth-bar">
+  <div class="stealth-label-row">
+    <span class="stealth-left">&#128084; SUIT</span>
+    <span class="stealth-name" id="stealth-name">SHADOW</span>
+    <span class="stealth-right">&#129399; NINJA</span>
+  </div>
+  <div class="stealth-track">
+    <input type="range" id="stealth" min="0" max="4" value="2" step="1" oninput="setStealth(this.value)">
+  </div>
+  <div class="stealth-levels">
+    <span>Clearnet</span>
+    <span>Tor</span>
+    <span>+I2P+SF</span>
+    <span>+Phantom</span>
+    <span>Full Hydra</span>
+  </div>
+</div>
+
+<!-- WIDGET GRID -->
+<div class="grid">
+
+  <!-- ON AIR -->
+  <div class="widget on-air-widget" id="w-onair">
+    <div class="w-label">Broadcast Status</div>
+    <div class="on-air-big offline" id="onair-text">OFFLINE</div>
+    <div style="font-size:.72rem;color:var(--dim);margin-top:.4rem;" id="onair-sub">Stack not fully sovereign</div>
+    <div style="margin-top:.8rem;">
+      <canvas class="w-canvas" id="signal-canvas" height="40"></canvas>
+    </div>
+  </div>
+
+  <!-- NEXIUM EARNINGS -->
+  <div class="widget" style="--accent:var(--gold)">
+    <div class="w-label">NeXiuM Earnings</div>
+    <div class="w-title color-gold" style="color:var(--gold)">This Session</div>
+    <div class="nexium-num" id="nexium-val">0.0000</div>
+    <div class="sub-stat" id="nexium-rate">+0.0000 / sec</div>
+    <div style="margin-top:.8rem;">
+      <div class="bar-row">
+        <div class="bar-label"><span>CDN Delivery</span><span id="cdn-pct">0%</span></div>
+        <div class="bar-track"><div class="bar-fill" id="cdn-bar" style="width:0%;background:var(--gold)"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span>Reticulum Bridge</span><span id="ret-pct">0%</span></div>
+        <div class="bar-track"><div class="bar-fill" id="ret-bar" style="width:0%;background:var(--green)"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span>I2P Relay</span><span id="i2p-pct">0%</span></div>
+        <div class="bar-track"><div class="bar-fill" id="i2p-bar" style="width:0%;background:var(--blue)"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GHOST GATE -->
+  <div class="widget" id="w-gate" style="--accent:var(--red)">
+    <div class="w-label">Ghost Gate</div>
+    <div class="w-title" style="color:var(--red)">Cerberus Firewall</div>
+    <div class="w-status status-on" id="gate-status"><div class="dot"></div>ACTIVE</div>
+    <div class="gate-stat"><span>Blocked Attempts</span><span class="gate-val" style="color:var(--red)" id="blocked-ct">0</span></div>
+    <div class="gate-stat"><span>Active Rules</span><span class="gate-val" style="color:var(--silver)" id="rules-ct">0</span></div>
+    <div class="gate-stat"><span>Port Knocks</span><span class="gate-val" style="color:var(--mauve)" id="knocks-ct">0</span></div>
+    <div class="gate-stat"><span>Last Threat</span><span class="gate-val" style="color:var(--orange);font-size:.65rem" id="last-threat">—</span></div>
+  </div>
+
+  <!-- TOR STATUS -->
+  <div class="widget" id="w-tor" style="--accent:var(--purple)">
+    <div class="w-label">Tor Network</div>
+    <div class="w-title" style="color:var(--mauve)">3 Heads · 3 Circuits Each</div>
+    <div class="w-status status-off" id="tor-status"><div class="dot"></div>OFFLINE</div>
+    <ul class="circuit-list" id="tor-circuits">
+      <li><div class="c-dot" style="background:#333"></div>Circuit 1 — Guard · Middle · Exit</li>
+      <li><div class="c-dot" style="background:#333"></div>Circuit 2 — Guard · Middle · Exit</li>
+      <li><div class="c-dot" style="background:#333"></div>Circuit 3 — Guard · Middle · Exit</li>
+    </ul>
+    <div class="sub-stat" id="tor-bw">Bandwidth: 0 KB/s</div>
+  </div>
+
+  <!-- I2P STATUS -->
+  <div class="widget" id="w-i2p" style="--accent:var(--blue)">
+    <div class="w-label">I2P Network</div>
+    <div class="w-title" style="color:var(--blue)">Invisible Internet</div>
+    <div class="w-status status-off" id="i2p-status"><div class="dot"></div>BOOTSTRAPPING</div>
+    <div class="bar-row">
+      <div class="bar-label"><span>Tunnel Build</span><span id="i2p-build">0%</span></div>
+      <div class="bar-track"><div class="bar-fill" id="i2p-build-bar" style="width:0%;background:var(--blue)"></div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><span>Peers</span><span id="i2p-peers">0</span></div>
+      <div class="bar-track"><div class="bar-fill" id="i2p-peer-bar" style="width:0%;background:var(--mauve)"></div></div>
+    </div>
+    <div class="sub-stat" id="i2p-tunnels">Tunnels: 0 in / 0 out</div>
+  </div>
+
+  <!-- RETICULUM -->
+  <div class="widget" id="w-ret" style="--accent:var(--green)">
+    <div class="w-label">Reticulum</div>
+    <div class="w-title" style="color:var(--green)">Sovereign Mesh</div>
+    <div class="w-status status-off" id="ret-status"><div class="dot"></div>OFFLINE</div>
+    <div class="gate-stat"><span>Mesh Nodes</span><span class="gate-val" style="color:var(--green)" id="ret-nodes">0</span></div>
+    <div class="gate-stat"><span>Packets Routed</span><span class="gate-val" style="color:var(--silver)" id="ret-pkts">0</span></div>
+    <div class="gate-stat"><span>NeXiuM/packet</span><span class="gate-val" style="color:var(--gold)" id="ret-rate">+0.0008 ⚡</span></div>
+    <div class="sub-stat" style="margin-top:.5rem;color:var(--green);font-size:.65rem;">Highest earning tier — Sovereignty Bonus active</div>
+  </div>
+
+  <!-- SNOWFLAKE -->
+  <div class="widget" id="w-sf" style="--accent:var(--silver)">
+    <div class="w-label">Snowflake</div>
+    <div class="w-title" style="color:var(--silver)">Censorship Bypass</div>
+    <div class="w-status status-off" id="sf-status"><div class="dot"></div>OFFLINE</div>
+    <canvas class="w-canvas" id="sf-canvas" height="70"></canvas>
+    <div class="sub-stat" id="sf-peers">WebRTC peers: 0</div>
+  </div>
+
+  <!-- OPENSNITCH -->
+  <div class="widget" id="w-snitch" style="--accent:var(--pink)">
+    <div class="w-label">OpenSnitch</div>
+    <div class="w-title" style="color:var(--pink)">App Firewall</div>
+    <div class="w-status status-on"><div class="dot"></div>WATCHING</div>
+    <ul class="snitch-list" id="snitch-list"></ul>
+  </div>
+
+  <!-- ATTACKER VIEW -->
+  <div class="widget" id="w-attack" style="--accent:var(--red)">
+    <div class="w-label">Adversary Intelligence</div>
+    <div class="w-title" style="color:var(--red)">What They See</div>
+    <div class="conf-label"><span>Confidence</span><span id="conf-pct">85%</span></div>
+    <div class="conf-meter">
+      <div class="conf-fill" id="conf-fill" style="width:85%;background:var(--red)"></div>
+    </div>
+    <div class="sub-stat" id="conf-label-text" style="margin-bottom:.6rem;color:var(--red)">Identity exposed</div>
+    <div class="bar-row">
+      <div class="bar-label"><span>IP Visibility</span><span id="ip-vis">100%</span></div>
+      <div class="bar-track"><div class="bar-fill" id="ip-vis-bar" style="width:100%;background:var(--red)"></div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><span>Pattern Lock</span><span id="pat-lock">HIGH</span></div>
+      <div class="bar-track"><div class="bar-fill" id="pat-bar" style="width:90%;background:var(--orange)"></div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><span>Traffic Shape</span><span id="shape-vis">VISIBLE</span></div>
+      <div class="bar-track"><div class="bar-fill" id="shape-bar" style="width:95%;background:var(--orange)"></div></div>
+    </div>
+  </div>
+
+  <!-- NETWORK TOPOLOGY -->
+  <div class="widget w2" style="--accent:var(--blue)">
+    <div class="w-label">Network Topology</div>
+    <div class="w-title" style="color:var(--blue)">Packet Flow</div>
+    <canvas class="w-canvas" id="topo" height="140"></canvas>
+  </div>
+
+  <!-- ELECTRIC FUNERAL PYRE — TRANSACTION -->
+  <div class="widget w2" style="--accent:var(--gold)">
+    <div class="w-label">Electric Funeral Pyre</div>
+    <div class="w-title" style="color:var(--gold)">Anonymous Transaction</div>
+    <div class="tx-flow" id="tx-flow">
+      <div class="tx-node" style="border-color:var(--dim);color:var(--dim)">Waiting for stealth...</div>
+    </div>
+    <div style="margin:.6rem 0;">
+      <canvas class="w-canvas" id="pyre-canvas" height="50"></canvas>
+    </div>
+    <div style="font-size:.68rem;color:var(--dim);line-height:1.6;" id="tx-log">
+      Transaction requires Ghost + Hydra active. Ephemeral keypairs not yet generated.
+    </div>
+  </div>
+
+  <!-- JANUS KEY -->
+  <div class="widget" id="w-janus" style="--accent:var(--mauve)">
+    <div class="w-label">Janus Key</div>
+    <div class="w-title" style="color:var(--mauve)">Physical USB · LUKS</div>
+    <div class="w-status status-warn" id="janus-status"><div class="dot"></div>NOT DETECTED</div>
+    <div class="gate-stat"><span>LUKS Header</span><span class="gate-val" id="luks-st" style="color:var(--dim)">Detached</span></div>
+    <div class="gate-stat"><span>Ring State</span><span class="gate-val" id="ring-st" style="color:var(--dim)">LOCKED</span></div>
+    <div class="gate-stat"><span>Key of Pluto</span><span class="gate-val" style="color:var(--purple)">In your head</span></div>
+    <div style="font-size:.62rem;color:var(--dim);margin-top:.6rem;font-style:italic;">
+      All 3 factors required. Janus + Ring + Pluto = Authorization.
+    </div>
+  </div>
+
+  <!-- ORCHESTRATOR -->
+  <div class="widget" style="--accent:var(--pink)">
+    <div class="w-label">Orchestrator</div>
+    <div class="w-title" style="color:var(--pink)">Intent Translator</div>
+    <div class="w-status status-on"><div class="dot"></div>LISTENING</div>
+    <div class="packet-log" id="orch-log"></div>
+  </div>
+
+  <!-- PACKET STREAM -->
+  <div class="widget w3" style="--accent:var(--green)">
+    <div class="w-label">Live Packet Stream</div>
+    <canvas class="w-canvas" id="packet-canvas" height="90"></canvas>
+  </div>
+
+</div><!-- /grid -->
+
+<script>
+// ─── SNOW ──────────────────────────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('snow'),x=c.getContext('2d');
+  const C=['#c4a4c8','#7b5ea7','#e0c0ff','#fff','#ffd700'];
+  let F=[];
+  const resize=()=>{c.width=innerWidth;c.height=innerHeight;};
+  addEventListener('resize',resize);resize();
+  for(let i=0;i<70;i++)F.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2.5+.5,vx:(Math.random()-.5)*.5,vy:Math.random()*.7+.2,o:Math.random()*.6+.2,col:C[0|Math.random()*C.length]});
+  (function tick(){
+    x.clearRect(0,0,c.width,c.height);
+    F.forEach(f=>{
+      x.beginPath();x.arc(f.x,f.y,f.r,0,Math.PI*2);
+      x.fillStyle=f.col;x.globalAlpha=f.o;x.fill();
+      f.x+=f.vx;f.y+=f.vy;
+      if(f.y>c.height+4){f.y=-4;f.x=Math.random()*c.width;}
+      if(f.x<0)f.x=c.width;if(f.x>c.width)f.x=0;
+    });
+    x.globalAlpha=1;
+    requestAnimationFrame(tick);
+  })();
+})();
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let stealthLevel = 2;
+let nexium = 0;
+let nexiumRate = 0;
+let blockedCt = 0;
+let retPkts = 0;
+let torActive = false;
+let i2pActive = false;
+let retActive = false;
+let sfActive  = false;
+let i2pBuild  = 0;
+let i2pPeers  = 0;
+let torBW     = 0;
+
+const stealthNames = ['CLEARNET','HOODIE','SHADOW','GHOST','NINJA'];
+const stealthColors = ['#888','#c4a4c8','#00d4ff','#ff6eb4','#00ff88'];
+
+// ─── STEALTH SLIDER ────────────────────────────────────────────────────────
+function setStealth(v){
+  stealthLevel = parseInt(v);
+  const name = stealthNames[stealthLevel];
+  const col  = stealthColors[stealthLevel];
+  document.getElementById('stealth-name').textContent = name;
+  document.getElementById('stealth-name').style.color = col;
+  applyStealthLevel();
+}
+
+function applyStealthLevel(){
+  const s = stealthLevel;
+  // Tor on at level 1+
+  torActive = s >= 1;
+  // I2P + Snowflake at level 2+
+  i2pActive = s >= 2;
+  sfActive  = s >= 2;
+  // Reticulum at level 3+
+  retActive = s >= 3;
+  // Phantom noise at level 3+
+
+  updateTorStatus();
+  updateI2PStatus();
+  updateSFStatus();
+  updateRetStatus();
+  updateAttacker();
+  updateNexiumRate();
+  updateOnAir();
+  updateTxFlow();
+}
+
+// ─── TOR ───────────────────────────────────────────────────────────────────
+function updateTorStatus(){
+  const el = document.getElementById('tor-status');
+  const w  = document.getElementById('w-tor');
+  const circuits = document.getElementById('tor-circuits');
+  if(torActive){
+    el.className='w-status status-on';
+    el.innerHTML='<div class="dot"></div>3 CIRCUITS ACTIVE';
+    w.classList.add('active');
+    const colors=['#7b5ea7','#c4a4c8','#ff6eb4'];
+    circuits.innerHTML = [1,2,3].map((n,i)=>
+      `<li><div class="c-dot" style="background:${colors[i]}"></div>Circuit ${n} — <span style="color:${colors[i]}">${['Entry','Middle','Exit'][i]} nodes established</span></li>`
+    ).join('');
+    torBW = 180 + Math.random()*80;
+    document.getElementById('tor-bw').textContent = `Bandwidth: ${torBW.toFixed(0)} KB/s`;
+  } else {
+    el.className='w-status status-off';
+    el.innerHTML='<div class="dot"></div>OFFLINE';
+    w.classList.remove('active');
+    circuits.innerHTML = [1,2,3].map(n=>`<li><div class="c-dot" style="background:#333"></div>Circuit ${n} — not established</li>`).join('');
+    document.getElementById('tor-bw').textContent='Bandwidth: 0 KB/s';
+  }
+}
+
+// ─── I2P ───────────────────────────────────────────────────────────────────
+function updateI2PStatus(){
+  const el=document.getElementById('i2p-status');
+  const w =document.getElementById('w-i2p');
+  if(i2pActive){
+    if(i2pBuild < 100){
+      el.className='w-status status-warn';
+      el.innerHTML='<div class="dot"></div>BOOTSTRAPPING';
+      w.classList.remove('active');
+    } else {
+      el.className='w-status status-on';
+      el.innerHTML='<div class="dot"></div>TUNNELS ACTIVE';
+      w.classList.add('active');
+    }
+  } else {
+    el.className='w-status status-off';
+    el.innerHTML='<div class="dot"></div>OFFLINE';
+    w.classList.remove('active');
+    i2pBuild=0; i2pPeers=0;
+    document.getElementById('i2p-build').textContent='0%';
+    document.getElementById('i2p-build-bar').style.width='0%';
+    document.getElementById('i2p-peers').textContent='0';
+    document.getElementById('i2p-peer-bar').style.width='0%';
+    document.getElementById('i2p-tunnels').textContent='Tunnels: 0 in / 0 out';
+  }
+}
+
+// ─── SNOWFLAKE CANVAS ──────────────────────────────────────────────────────
+const sfCtx = document.getElementById('sf-canvas').getContext('2d');
+let sfFlakes = [];
+function updateSFStatus(){
+  const el=document.getElementById('sf-status');
+  const w =document.getElementById('w-sf');
+  if(sfActive){
+    el.className='w-status status-on';
+    el.innerHTML='<div class="dot"></div>ACTIVE';
+    w.classList.add('active');
+  } else {
+    el.className='w-status status-off';
+    el.innerHTML='<div class="dot"></div>OFFLINE';
+    w.classList.remove('active');
+    document.getElementById('sf-peers').textContent='WebRTC peers: 0';
+  }
+}
+
+// ─── RETICULUM ─────────────────────────────────────────────────────────────
+function updateRetStatus(){
+  const el=document.getElementById('ret-status');
+  const w =document.getElementById('w-ret');
+  if(retActive){
+    el.className='w-status status-on';
+    el.innerHTML='<div class="dot"></div>MESH ACTIVE';
+    w.classList.add('active');
+    document.getElementById('ret-nodes').textContent = 12 + (0|Math.random()*8);
+    document.getElementById('ret-rate').textContent  = '+0.0012 ⚡ (sovereignty bonus)';
+  } else {
+    el.className='w-status status-off';
+    el.innerHTML='<div class="dot"></div>OFFLINE';
+    w.classList.remove('active');
+    document.getElementById('ret-nodes').textContent='0';
+  }
+}
+
+// ─── NEXIUM RATE ───────────────────────────────────────────────────────────
+function updateNexiumRate(){
+  if(stealthLevel === 0){ nexiumRate=0; }
+  else if(stealthLevel === 1){ nexiumRate=0.0002; }
+  else if(stealthLevel === 2){ nexiumRate=0.0008; }
+  else if(stealthLevel === 3){ nexiumRate=0.0018; }
+  else { nexiumRate=0.0030; }
+  document.getElementById('nexium-rate').textContent=`+${nexiumRate.toFixed(4)} / sec`;
+
+  const cdnW = Math.min(stealthLevel*20,80);
+  const retW = retActive ? 65 : 0;
+  const i2pW = i2pActive && i2pBuild>=100 ? 45 : 0;
+  setBar('cdn-bar','cdn-pct',cdnW,'%');
+  setBar('ret-bar','ret-pct',retW,'%');
+  setBar('i2p-bar','i2p-pct',i2pW,'%');
+}
+
+function setBar(barId,pctId,val,unit){
+  document.getElementById(barId).style.width=val+'%';
+  document.getElementById(pctId).textContent=val+unit;
+}
+
+// ─── ATTACKER VIEW ─────────────────────────────────────────────────────────
+function updateAttacker(){
+  const s=stealthLevel;
+  const conf    = [85,55,30,12,3][s];
+  const ipVis   = [100,5,2,0,0][s];
+  const patLock = [90,60,25,8,1][s];
+  const shapeVis= [95,70,30,10,2][s];
+
+  const confCol = conf>60?'var(--red)':conf>25?'var(--orange)':'var(--green)';
+  document.getElementById('conf-pct').textContent=conf+'%';
+  document.getElementById('conf-fill').style.width=conf+'%';
+  document.getElementById('conf-fill').style.background=confCol;
+  document.getElementById('conf-label-text').textContent=
+    conf>60?'Identity exposed':conf>25?'Partial pattern visible':'Signal lost — ghost mode';
+  document.getElementById('conf-label-text').style.color=confCol;
+
+  document.getElementById('ip-vis').textContent=ipVis+'%';
+  document.getElementById('ip-vis-bar').style.width=ipVis+'%';
+  document.getElementById('pat-lock').textContent=patLock>60?'HIGH':patLock>20?'MED':'NONE';
+  document.getElementById('pat-bar').style.width=patLock+'%';
+  document.getElementById('shape-vis').textContent=shapeVis>50?'VISIBLE':shapeVis>15?'NOISY':'INVISIBLE';
+  document.getElementById('shape-bar').style.width=shapeVis+'%';
+}
+
+// ─── ON AIR ────────────────────────────────────────────────────────────────
+function updateOnAir(){
+  const el  = document.getElementById('onair-text');
+  const sub = document.getElementById('onair-sub');
+  const w   = document.getElementById('w-onair');
+  if(stealthLevel >= 3){
+    el.className='on-air-big live';
+    el.textContent='ON AIR';
+    sub.textContent='Stack sovereign — broadcast active';
+    sub.style.color='var(--green)';
+    w.style.setProperty('--accent','var(--red)');
+  } else {
+    el.className='on-air-big offline';
+    el.textContent='OFFLINE';
+    sub.textContent='Requires Ghost or Ninja level';
+    sub.style.color='var(--dim)';
+  }
+}
+
+// ─── TX FLOW ───────────────────────────────────────────────────────────────
+function updateTxFlow(){
+  const flow = document.getElementById('tx-flow');
+  const log  = document.getElementById('tx-log');
+  if(stealthLevel < 3){
+    flow.innerHTML='<div class="tx-node" style="border-color:var(--dim);color:var(--dim)">Requires Ghost+ level</div>';
+    log.textContent='Transaction requires Ghost + Hydra active. Ephemeral keypairs not yet generated.';
+    return;
+  }
+  flow.innerHTML = `
+    <div class="tx-node" style="border-color:var(--mauve);color:var(--mauve)">Buyer<br><span style="font-size:.55rem;color:var(--dim)">eph. keypair</span></div>
+    <div class="tx-arrow">→</div>
+    <div class="tx-node" style="border-color:var(--purple);color:var(--purple)">I2P<br><span style="font-size:.55rem;color:var(--dim)">anon channel</span></div>
+    <div class="tx-arrow">→</div>
+    <div class="tx-node" style="border-color:var(--gold);color:var(--gold)">Shared<br><span style="font-size:.55rem;color:var(--dim)">secret</span></div>
+    <div class="tx-arrow">→</div>
+    <div class="tx-node" style="border-color:var(--red);color:var(--red)">&#128293; BURN<br><span style="font-size:.55rem;color:var(--dim)">both keys</span></div>
+    <div class="tx-arrow">→</div>
+    <div class="tx-node" style="border-color:var(--blue);color:var(--blue)">DivaChain<br><span style="font-size:.55rem;color:var(--dim)">ash on-chain</span></div>
+  `;
+  log.innerHTML='<span style="color:var(--green)">Buyer ephemeral key generated.</span> Seller ephemeral key generated. Shared secret derived. Transaction executes. <span style="color:var(--red)">&#128293; Both keys burned.</span> Ash recorded to DivaChain. Neither party can betray.';
+}
+
+// ─── GHOST GATE TICKS ──────────────────────────────────────────────────────
+const threats = ['SYN flood 45.33.xx.xx','Port scan 185.220.xx.xx','SSH brute 91.108.xx.xx','ICMP probe 62.210.xx.xx','DNS exfil attempt','XSS payload blocked','Known Tor exit drop'];
+setInterval(()=>{
+  blockedCt += Math.random()<.3 ? 1+0|Math.random()*3 : 0;
+  document.getElementById('blocked-ct').textContent = blockedCt.toLocaleString();
+  document.getElementById('rules-ct').textContent   = 847 + (0|Math.random()*5);
+  document.getElementById('knocks-ct').textContent  = 0|Math.random()*4;
+  if(Math.random()<.2)
+    document.getElementById('last-threat').textContent = threats[0|Math.random()*threats.length];
+}, 900);
+
+// ─── I2P BOOTSTRAP ────────────────────────────────────────────────────────
+setInterval(()=>{
+  if(i2pActive && i2pBuild < 100){
+    i2pBuild = Math.min(100, i2pBuild + Math.random()*3);
+    i2pPeers = Math.min(240, 0|i2pBuild*2.4);
+    document.getElementById('i2p-build').textContent=i2pBuild.toFixed(0)+'%';
+    document.getElementById('i2p-build-bar').style.width=i2pBuild+'%';
+    document.getElementById('i2p-peers').textContent=i2pPeers;
+    document.getElementById('i2p-peer-bar').style.width=Math.min(100,i2pPeers/3)+'%';
+    const inT=0|i2pBuild*.12, outT=0|i2pBuild*.10;
+    document.getElementById('i2p-tunnels').textContent=`Tunnels: ${inT} in / ${outT} out`;
+    if(i2pBuild>=100) updateI2PStatus();
+  }
+},400);
+
+// ─── TOR BW JITTER ────────────────────────────────────────────────────────
+setInterval(()=>{
+  if(torActive){
+    torBW = Math.max(60, torBW + (Math.random()-.5)*20);
+    document.getElementById('tor-bw').textContent=`Bandwidth: ${torBW.toFixed(0)} KB/s`;
+  }
+},1200);
+
+// ─── RETICULUM PACKETS ────────────────────────────────────────────────────
+setInterval(()=>{
+  if(retActive){
+    retPkts += 0|Math.random()*8+1;
+    document.getElementById('ret-pkts').textContent=retPkts.toLocaleString();
+  }
+},600);
+
+// ─── SNOWFLAKE PEERS ──────────────────────────────────────────────────────
+let sfPeers=0;
+setInterval(()=>{
+  if(sfActive){ sfPeers=Math.max(0,sfPeers+(0|Math.random()*3-1)); document.getElementById('sf-peers').textContent=`WebRTC peers: ${sfPeers}`; }
+  else sfPeers=0;
+},1500);
+
+// ─── NEXIUM TICK ──────────────────────────────────────────────────────────
+setInterval(()=>{
+  if(nexiumRate>0){
+    nexium += nexiumRate/10;
+    document.getElementById('nexium-val').textContent=nexium.toFixed(4);
+  }
+},100);
+
+// ─── OPENSNITCH FEED ──────────────────────────────────────────────────────
+const snitchApps=[
+  ['firefox','→ 1.1.1.1:443'],['curl','→ 104.21.xx.xx:80'],
+  ['python3','→ 127.0.0.1:11434'],['ollama','→ 0.0.0.0:11434'],
+  ['tor','→ 9001 relay'],['privoxy','→ 127.0.0.1:8118'],
+  ['aichat','→ api.anthropic.com:443'],['podman','→ 172.19.x.x:8080'],
+  ['ssh','→ 192.168.x.x:22'],['wget','→ alpine.mirrors.x.x:443'],
+];
+const snitchList=document.getElementById('snitch-list');
+setInterval(()=>{
+  if(Math.random()<.25){
+    const app=snitchApps[0|Math.random()*snitchApps.length];
+    const li=document.createElement('li');
+    li.innerHTML=`<div><div class="snitch-app">${app[0]}</div><div class="snitch-dest">${app[1]}</div></div><div style="display:flex;gap:.3rem"><button class="snitch-btn btn-allow" onclick="this.parentNode.parentNode.style.opacity='.3'">Allow</button><button class="snitch-btn btn-deny" onclick="this.parentNode.parentNode.remove()">Deny</button></div>`;
+    snitchList.prepend(li);
+    while(snitchList.children.length>5)snitchList.lastChild.remove();
+  }
+},1400);
+
+// ─── ORCHESTRATOR LOG ─────────────────────────────────────────────────────
+const orchMsgs=[
+  'Intent: "check dark stack status" → routing to hydra',
+  'Trust gate: approving outbound I2P relay',
+  'Anomaly detected: DNS leak suppressed',
+  'Playbook: nexus-hydra.sh shadow → executed',
+  'Audit: all transactions within policy',
+  'AI router: local model selected (latency)',
+  'Watchdog: no unexpected processes',
+  'Intent: "stream nexus.am.radio" → AB License check OK',
+  'NeXiuM residual: 0.0018 routed to wallet',
+  'Ghost Gate rule updated: block 91.108.0.0/16',
+];
+const orchLog=document.getElementById('orch-log');
+setInterval(()=>{
+  if(Math.random()<.3){
+    const d=document.createElement('div');
+    d.className='entry';
+    const t=new Date().toTimeString().slice(0,8);
+    d.innerHTML=`<span style="color:var(--purple)">[${t}]</span> <span style="color:var(--silver)">${orchMsgs[0|Math.random()*orchMsgs.length]}</span>`;
+    orchLog.prepend(d);
+    while(orchLog.children.length>6)orchLog.lastChild.remove();
+  }
+},1200);
+
+// ─── SIGNAL CANVAS ────────────────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('signal-canvas');
+  const x=c.getContext('2d');
+  c.width=c.offsetWidth*2||600; c.height=80;
+  let t=0;
+  (function tick(){
+    x.fillStyle='rgba(8,8,15,.4)';x.fillRect(0,0,c.width,c.height);
+    const live=stealthLevel>=3;
+    const amp=live?18:4;
+    const col=live?'#ff3355':'#333';
+    x.strokeStyle=col; x.lineWidth=2;
+    x.shadowBlur=live?8:0; x.shadowColor=col;
+    x.beginPath();
+    for(let i=0;i<c.width;i++){
+      const y=c.height/2+Math.sin((i+t)*.08)*amp*(live?1+Math.random()*.3:1);
+      i===0?x.moveTo(i,y):x.lineTo(i,y);
+    }
+    x.stroke(); x.shadowBlur=0;
+    t+=live?3:1;
+    requestAnimationFrame(tick);
+  })();
+})();
+
+// ─── TOPOLOGY CANVAS ─────────────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('topo');
+  const x=c.getContext('2d');
+  let W,H;
+  const resize=()=>{W=c.width=c.offsetWidth*1.5||600;H=c.height=210;};
+  resize();
+
+  const nodes=[
+    {id:'you',  label:'YOU',   col:'#00ff88', x:.1, y:.5},
+    {id:'tor1', label:'TOR',   col:'#7b5ea7', x:.28,y:.25},
+    {id:'i2p',  label:'I2P',   col:'#00d4ff', x:.28,y:.75},
+    {id:'priv', label:'PRXY',  col:'#c4a4c8', x:.46,y:.5},
+    {id:'ret',  label:'RET',   col:'#00ff88', x:.46,y:.15},
+    {id:'sf',   label:'SF',    col:'#c0d4e8', x:.46,y:.85},
+    {id:'diva', label:'DIVA',  col:'#ffd700', x:.7, y:.5},
+    {id:'inet', label:'NET',   col:'#ff6eb4', x:.9, y:.5},
+  ];
+
+  const edges=[
+    ['you','tor1'],['you','i2p'],['you','ret'],['you','sf'],
+    ['tor1','priv'],['i2p','priv'],['ret','priv'],['sf','priv'],
+    ['priv','diva'],['diva','inet'],
+  ];
+
+  let packets=[];
+  let t=0;
+
+  function addPacket(from,to,col){
+    const f=nodes.find(n=>n.id===from), t2=nodes.find(n=>n.id===to);
+    if(!f||!t2)return;
+    packets.push({fx:f.x,fy:f.y,tx:t2.x,ty:t2.y,p:0,col:col||f.col});
+  }
+
+  setInterval(()=>{
+    if(stealthLevel>0){
+      const activeEdges=edges.filter(e=>{
+        if(e[0]==='you'&&e[1]==='tor1') return torActive;
+        if(e[0]==='you'&&e[1]==='i2p')  return i2pActive;
+        if(e[0]==='you'&&e[1]==='ret')  return retActive;
+        if(e[0]==='you'&&e[1]==='sf')   return sfActive;
+        return true;
+      });
+      if(activeEdges.length){
+        const e=activeEdges[0|Math.random()*activeEdges.length];
+        addPacket(e[0],e[1]);
+      }
+    }
+  },300);
+
+  (function tick2(){
+    x.clearRect(0,0,W,H);
+    // edges
+    edges.forEach(([a,b])=>{
+      const na=nodes.find(n=>n.id===a),nb=nodes.find(n=>n.id===b);
+      const active=(a==='you'&&b==='tor1'&&torActive)||(a==='you'&&b==='i2p'&&i2pActive)||(a==='you'&&b==='ret'&&retActive)||(a==='you'&&b==='sf'&&sfActive)||(a!=='you'&&b!=='you');
+      x.strokeStyle=active?'rgba(123,94,167,.5)':'rgba(50,50,70,.3)';
+      x.lineWidth=active?1.5:.5;
+      x.beginPath();x.moveTo(na.x*W,na.y*H);x.lineTo(nb.x*W,nb.y*H);x.stroke();
+    });
+    // nodes
+    nodes.forEach(n=>{
+      const active=(n.id==='you')||(n.id==='tor1'&&torActive)||(n.id==='i2p'&&i2pActive)||(n.id==='ret'&&retActive)||(n.id==='sf'&&sfActive)||(n.id==='priv'&&stealthLevel>0)||(n.id==='diva'&&stealthLevel>0)||(n.id==='inet');
+      const col=active?n.col:'#333';
+      if(active){x.shadowBlur=10;x.shadowColor=col;}
+      x.fillStyle=col;
+      x.beginPath();x.arc(n.x*W,n.y*H,active?7:4,0,Math.PI*2);x.fill();
+      x.shadowBlur=0;
+      x.fillStyle=active?'#fff':'#444';
+      x.font=`bold ${active?9:7}px Courier New`;
+      x.textAlign='center';
+      x.fillText(n.label,n.x*W,n.y*H+18);
+    });
+    // packets
+    packets.forEach(p=>{
+      p.p=Math.min(1,p.p+.04);
+      const px=p.fx*W+(p.tx-p.fx)*W*p.p;
+      const py=p.fy*H+(p.ty-p.fy)*H*p.p;
+      x.shadowBlur=8;x.shadowColor=p.col;
+      x.fillStyle=p.col;
+      x.beginPath();x.arc(px,py,4,0,Math.PI*2);x.fill();
+      x.shadowBlur=0;
+    });
+    packets=packets.filter(p=>p.p<1);
+    t++;
+    requestAnimationFrame(tick2);
+  })();
+})();
+
+// ─── PYRE CANVAS ─────────────────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('pyre-canvas');
+  const x=c.getContext('2d');
+  c.width=c.offsetWidth*2||600;c.height=100;
+  let flames=Array.from({length:20},(_,i)=>({x:i/20,h:Math.random(),v:Math.random()*.1+.02}));
+  (function tick(){
+    x.clearRect(0,0,c.width,c.height);
+    if(stealthLevel<3){
+      x.fillStyle='rgba(50,50,70,.3)';
+      x.font='11px Courier New';
+      x.fillStyle='#333';
+      x.textAlign='center';
+      x.fillText('Electric Funeral Pyre — awaiting Ghost level',c.width/2,c.height/2);
+    } else {
+      flames.forEach((f,i)=>{
+        f.h+=f.v*(Math.random()-.4);
+        f.h=Math.max(.1,Math.min(1,f.h));
+        const bx=f.x*c.width;
+        const bh=f.h*c.height*.9;
+        const g=x.createLinearGradient(bx,c.height,bx,c.height-bh);
+        g.addColorStop(0,'#ff3300');
+        g.addColorStop(.4,'#ff8c00');
+        g.addColorStop(.8,'#ffd700');
+        g.addColorStop(1,'rgba(255,215,0,0)');
+        x.fillStyle=g;
+        const w=c.width/flames.length*1.4;
+        x.fillRect(bx-w/2,c.height-bh,w,bh);
+      });
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
+
+// ─── PACKET STREAM CANVAS ────────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('packet-canvas');
+  const x=c.getContext('2d');
+  c.width=c.offsetWidth*1.5||900;c.height=135;
+  let pkts=[];
+  const layers=[
+    {y:.2,label:'YOU → TOR',  col:'#7b5ea7', active:()=>torActive},
+    {y:.4,label:'TOR → PRXY', col:'#c4a4c8', active:()=>torActive},
+    {y:.6,label:'I2P TUNNEL', col:'#00d4ff', active:()=>i2pActive&&i2pBuild>50},
+    {y:.8,label:'RET MESH',   col:'#00ff88', active:()=>retActive},
+  ];
+  setInterval(()=>{
+    layers.forEach(l=>{
+      if(l.active()&&Math.random()<.5){
+        pkts.push({x:0,y:l.y,col:l.col,speed:Math.random()*.018+.008,size:Math.random()*3+2});
+      }
+    });
+  },120);
+  (function tick(){
+    x.fillStyle='rgba(8,8,15,.35)';x.fillRect(0,0,c.width,c.height);
+    // lane labels
+    layers.forEach(l=>{
+      x.fillStyle=l.active()?l.col+'55':'#22223a';
+      x.fillRect(0,l.y*c.height-1,c.width,2);
+      x.fillStyle=l.active()?l.col:'#333';
+      x.font='8px Courier New';
+      x.textAlign='left';
+      x.fillText(l.label,4,l.y*c.height-4);
+    });
+    // packets
+    pkts.forEach(p=>{
+      x.shadowBlur=6;x.shadowColor=p.col;
+      x.fillStyle=p.col;
+      x.beginPath();x.arc(p.x*c.width,p.y*c.height,p.size,0,Math.PI*2);x.fill();
+      x.shadowBlur=0;
+      p.x+=p.speed;
+    });
+    pkts=pkts.filter(p=>p.x<1.05);
+    requestAnimationFrame(tick);
+  })();
+})();
+
+// ─── SNOWFLAKE CANVAS ANIM ────────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('sf-canvas');
+  const x=c.getContext('2d');
+  c.width=c.offsetWidth*2||300;c.height=140;
+  let flakes=Array.from({length:25},()=>({x:Math.random(),y:Math.random(),r:Math.random()*3+1,v:Math.random()*.006+.002,o:Math.random()*.6+.2}));
+  (function tick(){
+    x.fillStyle='rgba(8,8,15,.3)';x.fillRect(0,0,c.width,c.height);
+    if(sfActive){
+      flakes.forEach(f=>{
+        x.globalAlpha=f.o;
+        x.fillStyle='#c0d4e8';
+        x.shadowBlur=4;x.shadowColor='#c0d4e8';
+        x.beginPath();x.arc(f.x*c.width,f.y*c.height,f.r,0,Math.PI*2);x.fill();
+        x.shadowBlur=0;
+        f.y+=f.v;
+        if(f.y>1.05){f.y=-0.05;f.x=Math.random();}
+      });
+      x.globalAlpha=1;
+    } else {
+      x.fillStyle='#333';x.font='10px Courier New';x.textAlign='center';x.globalAlpha=.4;
+      x.fillText('Offline — activate Shadow+',c.width/2,c.height/2);
+      x.globalAlpha=1;
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+setStealth(2);
+updateOnAir();
+</script>
+</body>
+</html>

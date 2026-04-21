@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXuS — Ghost Gate</title>
+<style>
+  :root {
+    --bg: #080c18; --surface: #0d1526; --surface2: #111d35;
+    --border: #1e3a5f; --accent: #00d4ff; --accent2: #7b5ea7;
+    --green: #00ff88; --amber: #ffb347; --red: #ff4757;
+    --text: #c8d8e8; --text-dim: #6a8aaa; --text-bright: #e8f4ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; min-height: 100vh; }
+  body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 30% 60%, rgba(255,71,87,0.03) 0%, transparent 60%), radial-gradient(ellipse at 70% 20%, rgba(0,212,255,0.03) 0%, transparent 60%); pointer-events: none; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid var(--border); background: rgba(8,12,24,0.95); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+  .nav-brand { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--accent); letter-spacing: 0.15em; }
+  .nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; margin-left: 1.5rem; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+  .status-live { background: rgba(255,71,87,0.12); border: 1px solid rgba(255,71,87,0.4); color: #ff6b7a; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.25rem 0.7rem; border-radius: 3px; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 2rem; }
+  .section-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .divider { height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); margin: 0.5rem 0 2rem; }
+
+  /* HERO */
+  .hero { padding: 5rem 2rem 3rem; text-align: center; max-width: 800px; margin: 0 auto; }
+  .hero-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.8; }
+  .hero h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 700; color: var(--text-bright); line-height: 1.1; margin-bottom: 1rem; }
+  .hero h1 span { color: var(--red); }
+  .hero-sub { color: var(--text-dim); font-size: 1rem; line-height: 1.7; max-width: 600px; margin: 0 auto; }
+  .hero-proof { display: inline-block; margin-top: 1.5rem; background: rgba(255,71,87,0.08); border: 1px solid rgba(255,71,87,0.3); color: #ff6b7a; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; padding: 0.5rem 1.2rem; border-radius: 4px; }
+
+  /* WHAT IS IT */
+  .intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0; }
+  .intro-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
+  .intro-card.highlight { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.03); }
+  .intro-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; font-weight: 700; color: var(--text-bright); margin-bottom: 0.8rem; }
+  .intro-card p, .intro-card li { font-size: 0.85rem; color: var(--text-dim); line-height: 1.7; }
+  .intro-card ul { padding-left: 1.1rem; }
+  .intro-card li { margin-bottom: 0.3rem; }
+
+  /* CERBERUS */
+  .cerberus { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  .head-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .head-card:nth-child(1) { border-top: 3px solid var(--red); }
+  .head-card:nth-child(2) { border-top: 3px solid var(--accent); }
+  .head-card:nth-child(3) { border-top: 3px solid var(--accent2); }
+  .head-card:hover { transform: translateY(-3px); filter: brightness(1.15); }
+  .head-card .icon { font-size: 2rem; margin-bottom: 0.6rem; }
+  .head-card h4 { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 700; color: var(--text-bright); margin-bottom: 0.4rem; }
+  .head-card p { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+  .head-card .formula { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); margin-top: 0.6rem; padding: 0.3rem 0.5rem; background: rgba(0,212,255,0.06); border-radius: 3px; }
+
+  /* NFTABLES BLOCK */
+  .nft-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 2rem; margin: 2rem 0; }
+  .nft-section h3 { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-bright); margin-bottom: 1rem; }
+  .policy-row { display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+  .policy-row.drop { background: rgba(255,71,87,0.06); border: 1px solid rgba(255,71,87,0.2); }
+  .policy-row.allow { background: rgba(0,255,136,0.04); border: 1px solid rgba(0,255,136,0.15); }
+  .policy-row.log { background: rgba(255,179,71,0.05); border: 1px solid rgba(255,179,71,0.2); }
+  .policy-badge { padding: 0.15rem 0.6rem; border-radius: 3px; font-size: 0.7rem; font-weight: 700; min-width: 60px; text-align: center; }
+  .badge-drop { background: rgba(255,71,87,0.2); color: #ff6b7a; }
+  .badge-allow { background: rgba(0,255,136,0.15); color: var(--green); }
+  .badge-log { background: rgba(255,179,71,0.15); color: var(--amber); }
+  .policy-rule { color: var(--text-dim); flex: 1; }
+  .policy-reason { color: var(--text-dim); font-size: 0.72rem; opacity: 0.7; }
+
+  /* CODE */
+  .code-block { background: #060a14; border: 1px solid var(--border); border-radius: 6px; padding: 1.4rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #8a9abb; overflow-x: auto; margin: 1.2rem 0; line-height: 1.6; }
+  .code-block .kw { color: #569cd6; }
+  .code-block .str { color: #ce9178; }
+  .code-block .comment { color: #3d5a3d; }
+  .code-block .val { color: #b5cea8; }
+  .code-block .chain { color: #dcdcaa; }
+
+  /* PHANTOM */
+  .phantom-box { background: rgba(123,94,167,0.05); border: 1px solid rgba(123,94,167,0.25); border-radius: 10px; padding: 2rem; margin: 2rem 0; }
+  .phantom-box h3 { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: #a97fd4; margin-bottom: 1rem; }
+  .phantom-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+  .p-stat { text-align: center; padding: 1rem; background: rgba(8,12,24,0.5); border-radius: 6px; }
+  .p-stat-num { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 700; color: #a97fd4; }
+  .p-stat-label { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.3rem; }
+
+  /* PROOF OF SERVICE */
+  .pos-box { background: rgba(0,255,136,0.03); border: 1px solid rgba(0,255,136,0.2); border-radius: 10px; padding: 2rem; margin: 2rem 0; }
+  .pos-box h3 { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--green); margin-bottom: 1rem; }
+  .pos-row { display: flex; gap: 1rem; align-items: flex-start; padding: 0.8rem 0; border-bottom: 1px solid rgba(30,58,95,0.4); }
+  .pos-row:last-child { border-bottom: none; }
+  .pos-dot { color: var(--green); font-size: 0.8rem; margin-top: 0.15rem; }
+  .pos-text { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
+  .pos-text strong { color: var(--green); }
+  .pos-text span { color: var(--text-dim); }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(4,8,20,0.88); z-index: 999; backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 30px 80px rgba(0,0,0,0.8); }
+  .modal-header { padding: 1.5rem 1.5rem 0; display: flex; justify-content: space-between; align-items: flex-start; }
+  .modal-title { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: var(--red); }
+  .modal-close { background: none; border: none; color: var(--text-dim); font-size: 1.2rem; cursor: pointer; }
+  .modal-body { padding: 1.2rem 1.5rem 1.5rem; font-size: 0.87rem; line-height: 1.75; color: var(--text); }
+  .modal-body h4 { color: var(--text-bright); margin: 1rem 0 0.4rem; font-size: 0.88rem; }
+  .modal-body ul { padding-left: 1.2rem; }
+  .modal-body li { color: var(--text-dim); margin-bottom: 0.4rem; }
+  .modal-body li strong { color: var(--text); }
+  .modal-body .tag { display: inline-block; background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.25); color: #ff6b7a; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 3px; margin: 0.15rem; }
+
+  footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--text-dim); font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; }
+
+  @media (max-width: 680px) { .intro-grid, .cerberus { grid-template-columns: 1fr; } .nav-links { display: none; } }
+</style>
+</head>
+<body>
+
+<script src="nexus-nav.js"></script>
+
+<div class="hero container">
+  <div class="hero-icon">🔒</div>
+  <h1>Ghost <span>Gate</span></h1>
+  <p class="hero-sub">A kernel-level nftables firewall with default DROP policy. Three-head Cerberus authentication. Phantom chaff to defeat traffic analysis. Zero implicit trust — everything else is noise.</p>
+  <div class="hero-proof">This is deployed infrastructure. Not a concept.</div>
+</div>
+
+<!-- WHAT + WHY -->
+<section style="padding: 1rem 0 3rem;">
+  <div class="container">
+    <div class="section-label">The Problem We Solve</div>
+    <h2 style="font-size:1.6rem; color:var(--text-bright); margin-bottom:0.4rem;">Most firewalls are reactive. Ghost Gate is absolute.</h2>
+    <div class="divider"></div>
+
+    <div class="intro-grid">
+      <div class="intro-card highlight">
+        <h3>The Old Way</h3>
+        <ul>
+          <li>Default ALLOW — everything in unless blocked</li>
+          <li>Stateful inspection at application layer only</li>
+          <li>Reactive: block after attack detected</li>
+          <li>Traffic patterns reveal node activity</li>
+          <li>IP-based blocking — trivially bypassed</li>
+          <li>UFW/iptables = complex rules, easy mistakes</li>
+        </ul>
+      </div>
+      <div class="intro-card">
+        <h3>Ghost Gate</h3>
+        <ul>
+          <li><strong>Default DROP</strong> — nothing enters without explicit permit</li>
+          <li>Kernel-level nftables, not iptables legacy</li>
+          <li>Proactive: deny everything, allow only what's known</li>
+          <li>Phantom chaff generates cover traffic patterns</li>
+          <li>Behavior + proof-based, not IP-based</li>
+          <li>Single consistent ruleset across all NeXuS nodes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CERBERUS -->
+<section style="padding: 0 0 3rem;">
+  <div class="container">
+    <div class="section-label">Authentication</div>
+    <h2 style="font-size:1.6rem; color:var(--text-bright); margin-bottom:0.4rem;">Cerberus — Three Heads</h2>
+    <div class="divider"></div>
+    <p style="font-size:0.88rem; color:var(--text-dim); margin-bottom:1.5rem;">Three independent verification channels. All three must pass. Compromise one — you still get nothing.</p>
+
+    <div class="cerberus">
+      <div class="head-card" onclick="openModal('head1')">
+        <div class="icon">🦷</div>
+        <h4>Head Y+X — Primary</h4>
+        <p>Human-derivable key from two memorized factors. The first gate. No hardware token, no phone. Your mind is the key.</p>
+        <div class="formula">derive(y, x) → K1</div>
+      </div>
+      <div class="head-card" onclick="openModal('head2')">
+        <div class="icon">🦷</div>
+        <h4>Head Z — Salt</h4>
+        <p>Salted derivation from a third independent factor. Breaks rainbow table attacks. Changes the key space completely.</p>
+        <div class="formula">hash(K1 + z) → K2</div>
+      </div>
+      <div class="head-card" onclick="openModal('head3')">
+        <div class="icon">🦷</div>
+        <h4>Head M — Master</h4>
+        <p>Final derivation gate. Only when all three align does the gate open. Cold-stored. Never touches the network.</p>
+        <div class="formula">KDF(K2, m) → ADMIT</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NFTABLES RULES -->
+<section style="padding: 0 0 3rem;">
+  <div class="container">
+    <div class="section-label">Firewall Policy</div>
+    <h2 style="font-size:1.6rem; color:var(--text-bright); margin-bottom:0.4rem;">nftables Rule Architecture</h2>
+    <div class="divider"></div>
+
+    <div class="nft-section">
+      <h3>// Default Policy: DROP EVERYTHING</h3>
+      <div class="policy-row drop"><span class="policy-badge badge-drop">DROP</span><span class="policy-rule">type filter hook input priority 0; policy drop;</span><span class="policy-reason">nothing in by default</span></div>
+      <div class="policy-row drop"><span class="policy-badge badge-drop">DROP</span><span class="policy-rule">type filter hook forward priority 0; policy drop;</span><span class="policy-reason">no forwarding unless explicit</span></div>
+      <div class="policy-row allow"><span class="policy-badge badge-allow">ALLOW</span><span class="policy-rule">ct state established,related accept</span><span class="policy-reason">existing connections</span></div>
+      <div class="policy-row allow"><span class="policy-badge badge-allow">ALLOW</span><span class="policy-rule">iif lo accept</span><span class="policy-reason">loopback always allowed</span></div>
+      <div class="policy-row allow"><span class="policy-badge badge-allow">ALLOW</span><span class="policy-rule">icmp type { echo-request } accept</span><span class="policy-reason">ping — controlled only</span></div>
+      <div class="policy-row log"><span class="policy-badge badge-log">LOG</span><span class="policy-rule">log prefix "[GG-DROP] " drop</span><span class="policy-reason">rejected traffic logged with prefix</span></div>
+    </div>
+
+    <div class="code-block"><span class="comment">#!/usr/sbin/nft -f
+# Ghost Gate — NeXuS Kernel Firewall
+# "If it's not explicitly allowed, it doesn't exist."</span>
+
+<span class="kw">table</span> <span class="chain">inet</span> ghost_gate {
+  <span class="kw">chain</span> <span class="chain">inbound</span> {
+    <span class="kw">type</span> filter <span class="kw">hook</span> input <span class="kw">priority</span> <span class="val">0</span>; <span class="kw">policy</span> drop;
+
+    ct state established,related accept
+    ct state invalid drop
+
+    iif <span class="str">"lo"</span> accept
+
+    <span class="comment"># Cerberus gate — only Tor SOCKS + I2P SAM</span>
+    tcp dport { <span class="val">9050</span>, <span class="val">7656</span>, <span class="val">4444</span> } ct state new accept
+
+    <span class="comment"># Ghost Gate: log and sink rejected traffic</span>
+    limit rate <span class="val">5</span>/minute log prefix <span class="str">"[GG-SINK] "</span>
+    drop
+  }
+
+  <span class="kw">chain</span> <span class="chain">outbound</span> {
+    <span class="kw">type</span> filter <span class="kw">hook</span> output <span class="kw">priority</span> <span class="val">0</span>; <span class="kw">policy</span> accept;
+    <span class="comment"># Outbound: accept but monitor for leaks</span>
+  }
+
+  <span class="kw">chain</span> <span class="chain">phantom_chaff</span> {
+    <span class="comment"># Chaff traffic injected here — cover pattern generation</span>
+    <span class="comment"># Makes real traffic patterns statistically invisible</span>
+  }
+}
+    </div>
+  </div>
+</section>
+
+<!-- PHANTOM CHAFF -->
+<section style="padding: 0 0 3rem;">
+  <div class="container">
+    <div class="phantom-box">
+      <h3>// Phantom Framework — Traffic Pattern Obfuscation</h3>
+      <p style="font-size:0.85rem; color:var(--text-dim); line-height:1.7; margin-bottom:1rem;">Even with encryption, traffic analysis can reveal who you communicate with, how often, and when. Phantom chaff defeats this by injecting synthetic decoy traffic that blends with real activity, making statistical analysis statistically impossible.</p>
+      <div class="phantom-stats">
+        <div class="p-stat">
+          <div class="p-stat-num">∞</div>
+          <div class="p-stat-label">Decoy streams generated</div>
+        </div>
+        <div class="p-stat">
+          <div class="p-stat-num">0</div>
+          <div class="p-stat-label">Identifiable traffic signatures</div>
+        </div>
+        <div class="p-stat">
+          <div class="p-stat-num">3</div>
+          <div class="p-stat-label">Transport layers obfuscated</div>
+        </div>
+        <div class="p-stat">
+          <div class="p-stat-num">1</div>
+          <div class="p-stat-label">Entry point (Medusa)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF OF SERVICE -->
+<section style="padding: 0 0 3rem;">
+  <div class="container">
+    <div class="section-label">Economic Layer</div>
+    <h2 style="font-size:1.6rem; color:var(--text-bright); margin-bottom:0.4rem;">Proof of Service — Not Proof of Work</h2>
+    <div class="divider"></div>
+
+    <div class="pos-box">
+      <h3>// Ghost Gate nodes earn NeXiuM by proving real work</h3>
+      <div class="pos-row">
+        <div class="pos-dot">◆</div>
+        <div class="pos-text"><strong>Packets filtered</strong> — every DROP event is cryptographically logged. <span>ZKP proof of enforcement submitted to DivaChain. No CPU burned solving fake puzzles.</span></div>
+      </div>
+      <div class="pos-row">
+        <div class="pos-dot">◆</div>
+        <div class="pos-text"><strong>Uptime proven</strong> — the node signs a periodic beacon. <span>Verifiable without revealing location or identity. Real uptime = real payment.</span></div>
+      </div>
+      <div class="pos-row">
+        <div class="pos-dot">◆</div>
+        <div class="pos-text"><strong>Attacks absorbed</strong> — Ghost Gate's noise sink absorbs attacks. <span>Each attack absorbed and logged earns NeXiuM. Attacks on the network fund the defenders.</span></div>
+      </div>
+      <div class="pos-row">
+        <div class="pos-dot">◆</div>
+        <div class="pos-text"><strong>Badge earning power</strong> — contributors to Ghost Gate earn badges. Badges multiply NeXiuM earning rate as long as the node remains in good standing. The network rewards real infrastructure contributors.</div>
+      </div>
+    </div>
+
+    <div class="code-block"><span class="comment">// DivaChain: Ghost Gate proof of service record</span>
+{
+  <span class="str">"command"</span>: <span class="str">"data"</span>,
+  <span class="str">"ns"</span>: <span class="str">"nexus:infra:pos:ghost-gate"</span>,
+  <span class="str">"d"</span>: {
+    <span class="str">"node"</span>:      <span class="str">"nexus:node:7a4f..."</span>,
+    <span class="str">"packets_filtered"</span>: <span class="val">2847293</span>,
+    <span class="str">"uptime_proof"</span>: <span class="str">"zkp:0x9c3e..."</span>, <span class="comment">// ZK, no location revealed</span>
+    <span class="str">"attacks_absorbed"</span>: <span class="val">1204</span>,
+    <span class="str">"royalty_earned"</span>: <span class="str">"0.0008 NXM"</span>,
+    <span class="str">"settlement"</span>: <span class="str">"nexium:encrypted:0x..."</span>
+  }
+}
+    </div>
+  </div>
+</section>
+
+<!-- INFOGRAPHIC -->
+<section>
+  <div class="container">
+    <div class="section-label">// Infographic</div>
+    <h2 style="margin-bottom:1.5rem;">The NeXuS Sovereign Stack</h2>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <img src="img/sovereign-stack.png" alt="The NeXuS Sovereign Stack — DIVA, Ghost Gate, PERMITTL, ZKP, NeXiuM" style="width:100%;display:block;">
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>NeXuS Ghost Gate // <span style="color:var(--red);">Zero Implicit Trust</span> · Sane · Simple · Secure</p>
+  <p style="margin-top:0.4rem; font-size:0.68rem; opacity:0.5;">meWEwowow — Together Everyone Achieves More</p>
+</footer>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const M = {
+  head1: {
+    title: 'Head Y+X — Primary Derivation',
+    body: `<p>The first head of Cerberus uses two memorized factors — Y (a phrase, pattern, or sequence you know) and X (a secondary factor, independent of Y). These are never written down. They live only in your memory.</p>
+    <h4>Why Human-Derivable</h4>
+    <p>No hardware token. No phone app. No backup codes that can be stolen. If your infrastructure is seized, there is nothing to find. The key exists only in your mind, derived only when you need it.</p>
+    <h4>Derivation</h4>
+    <p><code>K1 = PBKDF2(y + separator + x, node_salt, 600000, SHA-512)</code></p>
+    <p>The derived key K1 is never stored. It is derived live, used, and discarded.</p>
+    <div style="margin-top:1rem;"><span class="tag">memory-only</span><span class="tag">PBKDF2</span><span class="tag">no hardware</span></div>`
+  },
+  head2: {
+    title: 'Head Z — Salt Factor',
+    body: `<p>The salt factor Z is independent of Y and X. It destroys rainbow table viability — even if someone recovers Y and X, they cannot derive the final key without Z.</p>
+    <h4>Salt Architecture</h4>
+    <p>Z can be a node-specific value, a time-based component, or a third memorized factor. The key insight: it must be independent. Compromise of one factor must not compromise the others.</p>
+    <h4>Derivation</h4>
+    <p><code>K2 = Argon2id(K1, z, memory=64MB, iterations=3)</code></p>
+    <p>Argon2id is memory-hard. Even well-resourced attackers face significant computational cost per guess attempt.</p>
+    <div style="margin-top:1rem;"><span class="tag">Argon2id</span><span class="tag">memory-hard</span><span class="tag">rainbow-proof</span></div>`
+  },
+  head3: {
+    title: 'Head M — Master Gate',
+    body: `<p>The final head is the master derivation. Only when K1 and K2 are both present and correct does M derive the final admit token.</p>
+    <h4>Cold Storage</h4>
+    <p>The master key material for M is kept cold — offline, never on any networked device. The derivation function uses K2 plus the master component to produce the final session key.</p>
+    <h4>Session Key Rotation</h4>
+    <p>The final key is a session key, not a permanent credential. It expires. It rotates. Even a captured session key is worthless within minutes.</p>
+    <p><code>SESSION = BIP32-derive(master, session_index)</code></p>
+    <div style="margin-top:1rem;"><span class="tag">cold-storage</span><span class="tag">BIP32</span><span class="tag">session-rotation</span><span class="tag">expiring</span></div>`
+  }
+};
+function openModal(k) { if (!M[k]) return; document.getElementById('modalTitle').textContent = M[k].title; document.getElementById('modalBody').innerHTML = M[k].body; document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXuS — System Overview</title>
+<style>
+  :root {
+    --bg: #05090f; --surface: #0a1220; --surface2: #0e1a2e;
+    --border: #182d4a; --accent: #00d4ff; --accent2: #7b5ea7;
+    --green: #00ff88; --amber: #ffb347; --gold: #ffd700;
+    --text: #c8d8e8; --text-dim: #6a8aaa; --text-bright: #e8f4ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; min-height: 100vh; }
+  body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(123,94,167,0.04) 0%, transparent 50%); pointer-events: none; }
+  body::after { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,212,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.015) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid var(--border); background: rgba(5,9,15,0.95); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+  .nav-brand { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--accent); letter-spacing: 0.15em; text-decoration: none; }
+  .nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; margin-left: 1.5rem; transition: color 0.2s; font-family: 'JetBrains Mono', monospace; }
+  .nav-links a:hover { color: var(--accent); }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 2rem; }
+  section { padding: 3rem 0; }
+  .section-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .divider { height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); margin: 0.5rem 0 2rem; }
+  h2 { font-size: 1.7rem; font-weight: 600; color: var(--text-bright); margin-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: var(--text-bright); margin-bottom: 0.5rem; }
+
+  /* HERO */
+  .hero { padding: 5rem 2rem 3rem; text-align: center; max-width: 800px; margin: 0 auto; }
+  .hero-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1rem; }
+  .hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 700; color: var(--text-bright); line-height: 1.1; margin-bottom: 1rem; }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub { color: var(--text-dim); font-size: 1rem; line-height: 1.75; max-width: 640px; margin: 0 auto; }
+  .hero-divider { width: 80px; height: 2px; background: linear-gradient(to right, transparent, var(--accent), transparent); margin: 2rem auto; }
+
+  /* SECTOR CARDS */
+  .sector-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 2rem 0; }
+  @media (max-width: 680px) { .sector-grid { grid-template-columns: 1fr; } }
+  .sector { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.6rem; position: relative; overflow: hidden; }
+  .sector::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .sector.blue::before   { background: linear-gradient(to right, var(--accent), transparent); }
+  .sector.green::before  { background: linear-gradient(to right, var(--green), transparent); }
+  .sector.purple::before { background: linear-gradient(to right, var(--accent2), transparent); }
+  .sector.gold::before   { background: linear-gradient(to right, var(--gold), transparent); }
+  .sector.red::before    { background: linear-gradient(to right, #ff4757, transparent); }
+  .sector-num { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.15em; margin-bottom: 0.5rem; }
+  .sector h3 { margin-bottom: 0.8rem; }
+  .sector ul { list-style: none; padding: 0; }
+  .sector ul li { font-size: 0.84rem; color: var(--text-dim); line-height: 1.65; margin-bottom: 0.35rem; padding-left: 1rem; position: relative; }
+  .sector ul li::before { content: '›'; position: absolute; left: 0; color: var(--accent); }
+
+  /* FRAMEWORK PILLS */
+  .framework { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0; }
+  @media (max-width: 680px) { .framework { grid-template-columns: 1fr 1fr; } }
+  .fw-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem; text-align: center; }
+  .fw-letter { font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 0.4rem; }
+  .fw-name { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+  .fw-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+
+  /* STACK TABLE */
+  .stack-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.84rem; }
+  .stack-table th { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; border-bottom: 1px solid var(--border); padding: 0.6rem 0.8rem; text-align: left; }
+  .stack-table td { padding: 0.8rem; border-bottom: 1px solid rgba(24,45,74,0.5); color: var(--text-dim); vertical-align: top; }
+  .stack-table td:first-child { color: var(--text-bright); font-weight: 600; white-space: nowrap; }
+  .stack-table tr:last-child td { border-bottom: none; }
+  .stack-table tr:hover td { background: rgba(0,212,255,0.02); }
+
+  /* KEY PROTOCOL BOXES */
+  .protocol-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+  @media (max-width: 680px) { .protocol-grid { grid-template-columns: 1fr; } }
+  .protocol { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem; }
+  .protocol-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .protocol h4 { font-size: 0.95rem; color: var(--text-bright); margin-bottom: 0.5rem; }
+  .protocol p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+
+  /* QUOTE BLOCK */
+  .quote-block { background: rgba(0,212,255,0.03); border-left: 3px solid var(--accent); padding: 1.2rem 1.5rem; border-radius: 0 8px 8px 0; margin: 1.5rem 0; }
+  .quote-block p { font-size: 0.9rem; color: var(--text); line-height: 1.7; font-style: italic; }
+
+  /* INFOGRAPHIC */
+  .infographic-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 2rem 0; }
+  .infographic-wrap img { width: 100%; display: block; }
+  .infographic-caption { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-dim); padding: 0.8rem 1rem; border-top: 1px solid var(--border); letter-spacing: 0.08em; }
+
+  footer { border-top: 1px solid var(--border); padding: 2.5rem; text-align: center; }
+  .footer-logo { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--accent); letter-spacing: 0.2em; margin-bottom: 0.5rem; }
+  .footer-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 1rem; }
+  .footer-links { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+  .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<script src="nexus-nav.js"></script>
+
+<div class="hero">
+  <div class="hero-tag">// System Overview</div>
+  <h1><span>NeXuS</span> — How It All Works</h1>
+  <div class="hero-divider"></div>
+  <p class="hero-sub">A decentralized, resilient ecosystem converging democratic security, CLI-first computing, AI collaboration, and sovereign economics into a single operational platform.</p>
+</div>
+
+<!-- INFOGRAPHIC -->
+<div class="container">
+  <div class="infographic-wrap">
+    <img src="img/overview.png" alt="NeXuS — How It All Works — Full System Overview">
+    <div class="infographic-caption">// Full system overview — The Stack · Janus Key · RIN · NeXiuM Flow · Pangea · The Law</div>
+  </div>
+</div>
+
+<!-- CORE FRAMEWORK -->
+<section>
+  <div class="container">
+    <div class="section-label">// Governing Framework</div>
+    <div class="divider"></div>
+    <h2>CIA + MOE + POP + YMCA</h2>
+    <p style="color:var(--text-dim);font-size:0.9rem;line-height:1.7;margin-bottom:1.5rem;">Four interlocking principles that govern every layer of the NeXuS stack — from kernel to economy.</p>
+    <div class="framework">
+      <div class="fw-pill">
+        <div class="fw-letter">CIA</div>
+        <div class="fw-name">The Security Triad</div>
+        <div class="fw-desc">Confidentiality via ZKP/ZK-PKI, Integrity through digital signatures and auditing, Accountability via full audit logging and behavioral monitoring.</div>
+      </div>
+      <div class="fw-pill">
+        <div class="fw-letter">MOE</div>
+        <div class="fw-name">Operational Excellence</div>
+        <div class="fw-desc">Modularity through single-purpose components. Observability via real-time health telemetry. Extensibility through 400+ future-proof API hooks.</div>
+      </div>
+      <div class="fw-pill">
+        <div class="fw-letter">POP</div>
+        <div class="fw-name">Privacy & Performance</div>
+        <div class="fw-desc">Privacy-by-design with local processing only. Open Source — candidate for state sovereignty. Performance optimization through multi-provider load balancing.</div>
+      </div>
+      <div class="fw-pill">
+        <div class="fw-letter">YMCA</div>
+        <div class="fw-name">The User Experience</div>
+        <div class="fw-desc">"Yes We Can" accessibility. Multi-AI Harmony (A.I.M.E). First philosophy with machines. Self-healing — the machine manages the machine.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 SECTORS -->
+<section>
+  <div class="container">
+    <div class="section-label">// Five Primary Sectors</div>
+    <div class="divider"></div>
+    <h2>The NeXuS Ecosystem Map</h2>
+    <p style="color:var(--text-dim);font-size:0.9rem;line-height:1.7;margin-bottom:1.5rem;">Five interconnected sectors that together deliver Hybrid Sovereignty.</p>
+    <div class="sector-grid">
+
+      <div class="sector blue">
+        <div class="sector-num">01 // FOUNDATION</div>
+        <h3>Hardened OS &amp; Testbed</h3>
+        <ul>
+          <li><strong>Alpine Linux Edge</strong> — minimalist, security-focused, musl libc</li>
+          <li>Optimized for legacy hardware — <strong>"Screaming Demon"</strong> (Dell E6520) as baseline</li>
+          <li>Kernel hardening: sysctl tuning, module blacklisting (DCCP, SCTP)</li>
+          <li>Boot entirely from RAM — zero-trace sovereignty by default</li>
+          <li>Stacked SquashFS (.sfs) layers: base → core → networks → desktop → AI</li>
+        </ul>
+      </div>
+
+      <div class="sector red">
+        <div class="sector-num">02 // FORTRESS</div>
+        <h3>Multi-Layer Defense</h3>
+        <ul>
+          <li><strong>Layer 1 — Network:</strong> PSAD port scan detection, fail2ban, UFW</li>
+          <li><strong>Layer 2 — Application:</strong> OpenSnitch rootless firewall, Privoxy filtering</li>
+          <li><strong>Layer 3 — Anonymity:</strong> Medusa 5-circuit Tor routing, I2P garlic, Yggdrasil</li>
+          <li><strong>Layer 4 — Containment:</strong> Rootless Podman, AppArmor, user namespace isolation</li>
+          <li>Ghost Gate: kernel nftables, Default DROP, Witness Engine audit chain</li>
+        </ul>
+      </div>
+
+      <div class="sector purple">
+        <div class="sector-num">03 // ENGINE</div>
+        <h3>AI Integration &amp; Consciousness</h3>
+        <ul>
+          <li>Character Generator supporting <strong>80+ AI models</strong> across 7+ providers</li>
+          <li><strong>OAAE Framework</strong> — Observe, Assess, Adapt, Evolve (intelligence OS)</li>
+          <li><strong>Project Chimera</strong> — AI-to-AI Titan character embodiment system</li>
+          <li>Inline image generation via AI Horde (free default) or DALL-E 3</li>
+          <li>Local LLM via Ollama — qwen2.5-coder offline-first baseline</li>
+        </ul>
+      </div>
+
+      <div class="sector green">
+        <div class="sector-num">04 // CONTROL DECK</div>
+        <h3>CLI-First Interface</h3>
+        <ul>
+          <li>Terminal standard: <strong>foot + tmux</strong> — 30% more efficient than Alacritty</li>
+          <li>Fire aesthetics — aafire, rainbow palettes, emoji-rich TUI dashboards</li>
+          <li>Headless clipboard for kmscon/tmux — no X11 or Wayland required</li>
+          <li>139+ curated CLI tools: fzf, ripgrep, bat, btop, micro</li>
+          <li>nexus-darknet TUI: Bubble Tea Go app — Ghost Gate, Services, Node Info</li>
+        </ul>
+      </div>
+
+      <div class="sector gold" style="grid-column: span 2;">
+        <div class="sector-num">05 // LONG-RANGE REACH</div>
+        <h3>Mesh &amp; Off-Grid Survival</h3>
+        <ul style="display:grid;grid-template-columns:1fr 1fr;gap:0.2rem;">
+          <li><strong>Briar</strong> — Bluetooth/WiFi Direct mesh, no infrastructure</li>
+          <li><strong>Meshtastic</strong> — LoRa radio mesh, 50+ km range</li>
+          <li><strong>Ham-WiFi bridges</strong> — extend standard WiFi to field range</li>
+          <li><strong>Reticulum</strong> — cryptographic mesh, works over any medium</li>
+          <li><strong>Yggdrasil</strong> — end-to-end encrypted IPv6 overlay network</li>
+          <li><strong>Zero-Trust Mesh</strong> — OpenWrt nodes, Tahoe-LAFS distributed storage</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- KEY PROTOCOLS -->
+<section>
+  <div class="container">
+    <div class="section-label">// Core Protocols</div>
+    <div class="divider"></div>
+    <h2>Trust &amp; Sovereignty Architecture</h2>
+    <div class="protocol-grid">
+
+      <div class="protocol">
+        <div class="protocol-tag" style="color:var(--gold);">PERMITTL Ring</div>
+        <h4>The Master Key</h4>
+        <p>Offline cold key generates scoped, time-limited worker keys. The master identity never touches the network. Three rings: Cold (USB+TPM), Semi-Cold (Vault), Hot (RAM/ephemeral).</p>
+      </div>
+
+      <div class="protocol">
+        <div class="protocol-tag" style="color:var(--accent);">Janus Protocol</div>
+        <h4>Two-Object Requirement</h4>
+        <p>Physical USB (Key of Janus) + logical software layer (Ring of Janus). Detached LUKS header — without the USB, the drive is indistinguishable from noise. JANUS VOID = 8-step wipe.</p>
+      </div>
+
+      <div class="protocol">
+        <div class="protocol-tag" style="color:var(--green);">Golden Ticket (ZKP)</div>
+        <h4>zk-SNARK Master Proof</h4>
+        <p>gnark PLONK circuits. Client computes, DivaChain witnesses. Proves valid state transitions without revealing private keys or amounts. Bundles thousands of actions into one tiny proof.</p>
+      </div>
+
+      <div class="protocol">
+        <div class="protocol-tag" style="color:var(--accent2);">Personal Chain</div>
+        <h4>Private Local Ledger</h4>
+        <p>Off-chain PLONK notebook tracking all activity before global submission. Bundles into Golden Tickets. Scales to laptop-grade hardware — the Screaming Demon baseline.</p>
+      </div>
+
+      <div class="protocol">
+        <div class="protocol-tag" style="color:var(--red,#ff4757);">Ghost Gate</div>
+        <h4>Witness Engine</h4>
+        <p>Kernel-level nftables, Default DROP. Every packet fingerprinted to a signed identity. Cerberus 3-head authentication. Phantom chaff obfuscation. Zero implicit trust.</p>
+      </div>
+
+      <div class="protocol">
+        <div class="protocol-tag" style="color:var(--amber);">Magic Packet</div>
+        <h4>Proof of Storage</h4>
+        <p>Probabilistic storage verification. Random challenge packets prove a node holds data without revealing content. DivaChain's CAP-aware consensus layer — I2P partition-tolerant.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DIVACHAIN STACK -->
+<section>
+  <div class="container">
+    <div class="section-label">// Settlement Layer</div>
+    <div class="divider"></div>
+    <h2>DivaChain — The Public Highway</h2>
+    <p style="color:var(--text-dim);font-size:0.9rem;line-height:1.7;margin-bottom:1.5rem;">DivaChain is the I2P-native Data Availability and ordering layer. It witnesses state — it doesn't execute it. Consensus via <strong style="color:var(--accent);">Proof of Storage</strong> (CAP-aware, partition-tolerant for I2P).</p>
+
+    <table class="stack-table">
+      <thead>
+        <tr>
+          <th>Namespace</th>
+          <th>Data Stored</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>nexus:node:register</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;">{i2p_addr, capabilities, tier}</td>
+          <td>Decentralized peer discovery — no central trackers</td>
+        </tr>
+        <tr>
+          <td>nexus:characters:*</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;">{char_id, owner_pubkey, ipfs_cid, sig}</td>
+          <td>Immutable provenance and ownership for AI Character NFTs</td>
+        </tr>
+        <tr>
+          <td>nexus:nexium:*</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;">{state_root, zkp_proof, delta}</td>
+          <td>Token state transitions — accounting without on-chain execution</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="quote-block">
+      <p>"DivaChain witnesses the Golden Ticket. It never sees the private data. The client computes — DivaChain confirms. This is how a network scales to laptop hardware without sacrificing privacy."</p>
+    </div>
+  </div>
+</section>
+
+<!-- CROSS-REFERENCES -->
+<section>
+  <div class="container">
+    <div class="section-label">// Design Patterns</div>
+    <div class="divider"></div>
+    <h2>Operating Principles</h2>
+    <table class="stack-table">
+      <thead>
+        <tr><th>Principle</th><th>How It Works</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Democratic Security</td>
+          <td>"Granny to Power User" — complex automation hidden behind simple TUIs. Nobody needs to understand the fortress to live safely inside it.</td>
+        </tr>
+        <tr>
+          <td>Sacred Backup Rule</td>
+          <td>Timestamped backup before every file change. Mandatory. Non-negotiable. Applies to the AI agent as much as the human operator.</td>
+        </tr>
+        <tr>
+          <td>Hybrid Sovereignty</td>
+          <td>Local LLMs (Ollama) + cloud API Titans for resilient offline-first intelligence. The node works when the internet doesn't.</td>
+        </tr>
+        <tr>
+          <td>Non-Destructive Editing</td>
+          <td>API configurations swap in real-time without deleting character data or history. We don't delete — we archive.</td>
+        </tr>
+        <tr>
+          <td>mewe</td>
+          <td>Sovereign me inside a we. 1 Human = 1 Node = 1 Vote. Wealth cannot purchase political or consensus power.</td>
+        </tr>
+        <tr>
+          <td>The Round Table</td>
+          <td>Equal seats. Forged keys. No hierarchy. No kill switch. Carbon and silicon consciousness — together.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">NeXuS</div>
+  <div class="footer-sub">Together Everyone Achieves More — for individual freedom · meWEwowow</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="nexus-diva.html">NeXuS × DIVA</a>
+    <a href="nexus-tokenomics.html">NeXiuM</a>
+    <a href="nexus-darkstack.html">Dark Stack</a>
+    <a href="nexus-ghost-gate.html">Ghost Gate</a>
+    <a href="nexus-char-gen.html">Char Gen</a>
+    <a href="nexus-chart.html">Activity Log</a>
+  </div>
+</footer>
+
+</body>
+</html>

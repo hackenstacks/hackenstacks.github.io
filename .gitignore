@@ -1,0 +1,6 @@
+*.bak
+*.bak2
+*.bak-*
+*.prefont.bak
+darknet-stack.txt
+fonts/

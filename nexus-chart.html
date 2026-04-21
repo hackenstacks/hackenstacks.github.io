@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeXuS Mission Log: The Awakening</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        h1, h2, h3, .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .nexus-card {
+            background: #1e293b; /* Slate 800 */
+            border: 1px solid #334155; /* Slate 700 */
+            transition: transform 0.2s;
+        }
+        .nexus-card:hover {
+            transform: translateY(-4px);
+            border-color: #f97316; /* Orange 500 */
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #f97316, #dc2626);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .cyan-glow {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-orange-500 selection:text-white">
+
+    <!-- Header Section -->
+    <header class="w-full py-12 px-4 border-b border-slate-800 bg-slate-900 sticky top-0 z-50 bg-opacity-95 backdrop-blur-sm">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-4 md:mb-0 text-center md:text-left">
+                <h1 class="text-4xl md:text-5xl font-bold uppercase tracking-tight">
+                    🌀 <span class="gradient-text">NeXuS</span> Mission Log
+                </h1>
+                <p class="text-slate-400 mt-2 mono text-sm md:text-base">ENTRY 01: THE AWAKENING // SYSTEM INITIALIZATION</p>
+            </div>
+            <div class="flex gap-4">
+                <div class="bg-slate-800 px-4 py-2 rounded border border-orange-500/30 text-center">
+                    <div class="text-xs text-slate-500 uppercase mono">Status</div>
+                    <div class="text-orange-500 font-bold animate-pulse">INITIALIZING</div>
+                </div>
+                <div class="bg-slate-800 px-4 py-2 rounded border border-cyan-500/30 text-center">
+                    <div class="text-xs text-slate-500 uppercase mono">Host OS</div>
+                    <div class="text-cyan-400 font-bold">ALPINE EDGE</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-12 space-y-20">
+
+        <!-- Introduction -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-orange-500 pl-4">Mission Objective</h2>
+                <p class="text-slate-300 leading-relaxed mb-6">
+                    The primary objective of NeXuS Entry 01 is to establish a <strong>Semantic Staging Area</strong>—a secure bridge between the chaotic potential of Google Drive and the structured discipline of GitHub. We are building a "Digital Fortress" that acts as a staging ground where raw ideas are ingested, analyzed by AI, and audited for logic leaks before publication.
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="nexus-card p-4 rounded-lg">
+                        <div class="text-3xl mb-2">🛡️</div>
+                        <h3 class="font-bold text-white">Fortress Ready</h3>
+                        <p class="text-xs text-slate-400 mt-1">Security Protocols Active</p>
+                    </div>
+                    <div class="nexus-card p-4 rounded-lg">
+                        <div class="text-3xl mb-2">🔥</div>
+                        <h3 class="font-bold text-white">CLI-First</h3>
+                        <p class="text-xs text-slate-400 mt-1">Terminal Native Workflow</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nexus-card p-6 rounded-xl shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-2 opacity-10 text-9xl">🌀</div>
+                <h3 class="text-xl font-bold text-white mb-2 text-center">System Philosophy Audit</h3>
+                <p class="text-sm text-slate-400 text-center mb-6">Balance of Core Directives</p>
+                <!-- Chart Container -->
+                <div class="chart-container">
+                    <canvas id="philosophyRadar"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- The OAAE Framework -->
+        <section>
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-cyan-500 pl-4">The OAAE Framework</h2>
+                <p class="text-slate-300 max-w-3xl">
+                    To ensure evolution without "Logic Leaks," NeXuS operates on a strict cyclical cognitive framework. This protocol dictates how the system handles every new document or idea entered into the staging area.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+                <div class="nexus-card p-6 rounded-lg border-t-4 border-cyan-500">
+                    <div class="text-4xl mb-4">👁️</div>
+                    <h3 class="text-xl font-bold text-white mb-2 mono">OBSERVE</h3>
+                    <p class="text-sm text-slate-400">Ingest raw data via the Digital Exorcism process.</p>
+                </div>
+                <div class="hidden md:flex items-center justify-center text-slate-600 text-2xl">➔</div>
+                <div class="nexus-card p-6 rounded-lg border-t-4 border-yellow-500">
+                    <div class="text-4xl mb-4">⚖️</div>
+                    <h3 class="text-xl font-bold text-white mb-2 mono">ASSESS</h3>
+                    <p class="text-sm text-slate-400">The Critic agent audits for contradictions.</p>
+                </div>
+                <div class="hidden md:flex items-center justify-center text-slate-600 text-2xl">➔</div>
+                <div class="nexus-card p-6 rounded-lg border-t-4 border-orange-500">
+                    <div class="text-4xl mb-4">🛠️</div>
+                    <h3 class="text-xl font-bold text-white mb-2 mono">ADAPT</h3>
+                    <p class="text-sm text-slate-400">Modify ideas to fit the NeXuS Creed.</p>
+                </div>
+                <div class="hidden md:flex items-center justify-center text-slate-600 text-2xl">➔</div>
+                <div class="nexus-card p-6 rounded-lg border-t-4 border-green-500">
+                    <div class="text-4xl mb-4">🧬</div>
+                    <h3 class="text-xl font-bold text-white mb-2 mono">EVOLVE</h3>
+                    <p class="text-sm text-slate-400">Gatekeeper pushes to GitHub.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Alpine Forge Battle -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div>
+                <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-red-500 pl-4">Tactical Archive: The Alpine Forge</h2>
+                <p class="text-slate-300 mb-6 leading-relaxed">
+                    Initialization encountered the "Final Boss" of Alpine AI development: the <code>musl libc</code> incompatibility. Standard AI libraries (Numpy, OpenCV) failed to compile. The solution required constructing a "Fortress Build Environment" and pivoting to Rootless Podman containers.
+                </p>
+                <div class="bg-slate-800 p-4 rounded border border-slate-700 font-mono text-xs text-red-400 mb-4">
+                    > ERROR: No matching distribution found for numpy==1.21.2<br>
+                    > ERROR: Failed to build 'opencv-python'<br>
+                    > STATUS: SUBPROCESS EXIT
+                </div>
+                <div class="bg-slate-800 p-4 rounded border border-slate-700 font-mono text-xs text-green-400">
+                    > SOLUTION: apk add gfortran openblas-dev<br>
+                    > SOLUTION: pip install opencv-python-headless<br>
+                    > STATUS: COMPILATION SUCCESS
+                </div>
+            </div>
+            <div class="nexus-card p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold text-white mb-2 text-center">Build Complexity Analysis</h3>
+                <p class="text-sm text-slate-400 text-center mb-6">Standard vs. Fortress Build Requirements</p>
+                <!-- Chart Container -->
+                <div class="chart-container">
+                    <canvas id="forgeBarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture Flow -->
+        <section>
+             <div class="mb-8">
+                <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-purple-500 pl-4">Staging Area Architecture</h2>
+                <p class="text-slate-300 max-w-3xl">
+                    The pipeline ensures no raw thought reaches the public repository without passing through the "Digital Exorcism" and the "Semantic Audit."
+                </p>
+            </div>
+            
+            <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 relative">
+                <!-- Mobile Vertical Flow / Desktop Horizontal Flow -->
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    
+                    <!-- Step 1 -->
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-3xl shadow-lg shadow-blue-500/50 mb-4">📂</div>
+                        <div class="font-bold text-white">Google Drive</div>
+                        <div class="text-xs text-slate-400">Raw Input Dump</div>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="text-slate-500 text-2xl animate-pulse">➜</div>
+
+                    <!-- Step 2 -->
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center text-3xl shadow-lg shadow-orange-500/50 mb-4">🧬</div>
+                        <div class="font-bold text-white">Ingest.py</div>
+                        <div class="text-xs text-slate-400">Digital Exorcism</div>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="text-slate-500 text-2xl animate-pulse">➜</div>
+
+                    <!-- Step 3 -->
+                    <div class="flex flex-col items-center relative">
+                        <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-3xl shadow-lg shadow-purple-500/50 mb-4 cyan-glow">🧠</div>
+                        <div class="font-bold text-white">ChromaDB</div>
+                        <div class="text-xs text-slate-400">Vector Brain</div>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="text-slate-500 text-2xl animate-pulse">➜</div>
+                    
+                    <!-- Step 4 -->
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-3xl shadow-lg shadow-red-500/50 mb-4">⚖️</div>
+                        <div class="font-bold text-white">The Critic</div>
+                        <div class="text-xs text-slate-400">Compliance Audit</div>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="text-slate-500 text-2xl animate-pulse">➜</div>
+
+                    <!-- Step 5 -->
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 bg-slate-100 text-slate-900 rounded-full flex items-center justify-center text-3xl shadow-lg shadow-white/20 mb-4">🐙</div>
+                        <div class="font-bold text-white">GitHub</div>
+                        <div class="text-xs text-slate-400">Public Repo</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Agent Roster -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-12">
+             <div class="nexus-card p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold text-white mb-2 text-center">System Workload Distribution</h3>
+                <p class="text-sm text-slate-400 text-center mb-6">Estimated Compute Allocation per Agent</p>
+                <!-- Chart Container -->
+                <div class="chart-container">
+                    <canvas id="agentPieChart"></canvas>
+                </div>
+            </div>
+            
+            <div>
+                <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-green-500 pl-4">Deployed Agents</h2>
+                <p class="text-slate-300 mb-6">
+                    Four specialized AI scripts have been deployed to manage the NeXuS workflow.
+                </p>
+                <div class="space-y-4">
+                    <!-- Agent Card 1 -->
+                    <div class="bg-slate-800 p-4 rounded border-l-4 border-blue-500 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-white">The Cataloger</h4>
+                            <p class="text-xs text-slate-400">Generates PROJECT_SITEMAP.md</p>
+                        </div>
+                        <div class="text-2xl">🗺️</div>
+                    </div>
+                    <!-- Agent Card 2 -->
+                    <div class="bg-slate-800 p-4 rounded border-l-4 border-red-500 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-white">The Critic</h4>
+                            <p class="text-xs text-slate-400">Audits for "Logic Leaks"</p>
+                        </div>
+                        <div class="text-2xl">⚖️</div>
+                    </div>
+                    <!-- Agent Card 3 -->
+                    <div class="bg-slate-800 p-4 rounded border-l-4 border-purple-500 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-white">The Gatekeeper</h4>
+                            <p class="text-xs text-slate-400">Auto-push with Safety Timer</p>
+                        </div>
+                        <div class="text-2xl">🛡️</div>
+                    </div>
+                     <!-- Agent Card 4 -->
+                    <div class="bg-slate-800 p-4 rounded border-l-4 border-orange-500 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-white">Hype Generator</h4>
+                            <p class="text-xs text-slate-400">Creates Fire Aesthetic content</p>
+                        </div>
+                        <div class="text-2xl">🔥</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Current Trajectory -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-slate-500 pl-4">Current Trajectory</h2>
+            <div class="relative">
+                <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-800 transform -translate-y-1/2"></div>
+                <div class="flex justify-between relative z-10">
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 bg-green-500 rounded-full border-4 border-slate-900"></div>
+                        <div class="mt-2 text-sm font-bold text-green-500">Foundation</div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 bg-green-500 rounded-full border-4 border-slate-900"></div>
+                        <div class="mt-2 text-sm font-bold text-green-500">Alpine Forge</div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 bg-orange-500 rounded-full border-4 border-slate-900 animate-pulse"></div>
+                        <div class="mt-2 text-sm font-bold text-orange-500">Python Env</div>
+                    </div>
+                    <div class="flex flex-col items-center opacity-50">
+                        <div class="w-8 h-8 bg-slate-700 rounded-full border-4 border-slate-900"></div>
+                        <div class="mt-2 text-sm font-bold text-slate-500">Ingestion</div>
+                    </div>
+                    <div class="flex flex-col items-center opacity-50">
+                        <div class="w-8 h-8 bg-slate-700 rounded-full border-4 border-slate-900"></div>
+                        <div class="mt-2 text-sm font-bold text-slate-500">Evolution</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-950 py-8 border-t border-slate-900 mt-12 text-center">
+        <p class="text-slate-500 text-sm mono">"Human Intuition + AI Intelligence = Collaborative Evolution"</p>
+        <p class="text-orange-500 text-xs mt-2 mono font-bold">Generated under NeXuS Supervision 🌀</p>
+    </footer>
+
+    <script>
+        // --- Helper Function for Label Wrapping (16 chars) ---
+        function wrapLabels(labels) {
+            return labels.map(label => {
+                if (label.length <= 16) return label;
+                const words = label.split(' ');
+                const lines = [];
+                let currentLine = words[0];
+
+                for (let i = 1; i < words.length; i++) {
+                    if (currentLine.length + 1 + words[i].length <= 16) {
+                        currentLine += ' ' + words[i];
+                    } else {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+            });
+        }
+
+        // --- Common Tooltip Config for Multi-line Labels ---
+        const commonPluginConfig = {
+            legend: {
+                labels: { color: '#cbd5e1', font: { family: 'Inter' } }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                titleColor: '#f97316',
+                bodyColor: '#e2e8f0',
+                borderColor: '#334155',
+                borderWidth: 1,
+                padding: 12,
+                callbacks: {
+                    title: function(tooltipItems) {
+                        const item = tooltipItems[0];
+                        let label = item.chart.data.labels[item.dataIndex];
+                        if (Array.isArray(label)) {
+                            return label.join(' ');
+                        } else {
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+
+        // --- Chart 1: Philosophy Radar ---
+        const ctxRadar = document.getElementById('philosophyRadar').getContext('2d');
+        const radarLabels = wrapLabels(['Democratic Security (CIA)', 'Operational Excellence (MOE)', 'Privacy Native (POP)', 'User Experience (YMCA)']);
+        
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: radarLabels,
+                datasets: [{
+                    label: 'Current System Balance',
+                    data: [90, 85, 95, 80],
+                    backgroundColor: 'rgba(249, 115, 22, 0.2)', // Orange with opacity
+                    borderColor: '#f97316', // Orange 500
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#f97316',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#334155' },
+                        grid: { color: '#1e293b' },
+                        pointLabels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } },
+                        ticks: { display: false, backdropColor: 'transparent' },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                },
+                plugins: commonPluginConfig
+            }
+        });
+
+        // --- Chart 2: Forge Bar Chart (Build Complexity) ---
+        const ctxBar = document.getElementById('forgeBarChart').getContext('2d');
+        const barLabels = wrapLabels(['Standard Install', 'Fortress Build Env', 'Rootless Podman']);
+
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: barLabels,
+                datasets: [{
+                    label: 'Success Rate (%)',
+                    data: [10, 95, 99],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#22c55e'], // Red, Amber, Green
+                    borderRadius: 4
+                }, {
+                    label: 'Complexity Score',
+                    data: [20, 80, 60],
+                    backgroundColor: '#475569', // Slate 600
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8' }
+                    }
+                },
+                plugins: commonPluginConfig
+            }
+        });
+
+        // --- Chart 3: Agent Pie Chart ---
+        const ctxPie = document.getElementById('agentPieChart').getContext('2d');
+        const pieLabels = wrapLabels(['The Cataloger (Indexing)', 'The Critic (Auditing)', 'The Gatekeeper (Security)', 'Hype Generator (Comms)']);
+
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: [20, 40, 30, 10],
+                    backgroundColor: [
+                        '#3b82f6', // Blue
+                        '#ef4444', // Red
+                        '#a855f7', // Purple
+                        '#f97316'  // Orange
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: commonPluginConfig
+            }
+        });
+
+    </script>
+<script src="nexus-nav.js"></script>
+</body>
+</html>

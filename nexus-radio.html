@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXuS RADiO — Sovereign Frequency</title>
+<style>
+  :root {
+    --green:  #00ff88;
+    --pink:   #ff6eb4;
+    --blue:   #00d4ff;
+    --purple: #7b5ea7;
+    --mauve:  #c4a4c8;
+    --gold:   #ffd700;
+    --silver: #c0d4e8;
+    --bg:     #0a0a0f;
+    --bg2:    #11111a;
+    --bg3:    #181825;
+    --text:   #e0e0f0;
+    --dim:    #888;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── PURPLE SNOW ─────────────────────────────────── */
+  #snow-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.18;
+  }
+
+  /* ─── NAV ─────────────────────────────────────────── */
+  nav {
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,15,0.95);
+    border-bottom: 1px solid var(--purple);
+    padding: 0.6rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    z-index: 100;
+    flex-wrap: wrap;
+  }
+  nav .logo {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--green);
+    letter-spacing: 2px;
+    margin-right: 1rem;
+  }
+  nav a {
+    color: var(--dim);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--green); }
+  nav a.active { color: var(--pink); }
+
+  /* ─── LAYOUT ──────────────────────────────────────── */
+  .page { position: relative; z-index: 1; }
+
+  /* ─── HERO ────────────────────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 5rem 2rem 3rem;
+    background: radial-gradient(ellipse at center top, rgba(123,94,167,0.25) 0%, transparent 70%);
+  }
+
+  .hero-call {
+    font-size: 0.85rem;
+    letter-spacing: 6px;
+    color: var(--mauve);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-title {
+    font-size: clamp(3rem, 10vw, 7rem);
+    font-weight: 900;
+    letter-spacing: 4px;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--green) 0%, var(--pink) 35%, var(--purple) 55%, var(--gold) 80%, var(--blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.4rem;
+    font-style: italic;
+  }
+
+  .hero-freq {
+    font-size: 1.1rem;
+    color: var(--silver);
+    letter-spacing: 3px;
+    margin-bottom: 0.3rem;
+  }
+
+  .hero-tagline {
+    font-size: 0.9rem;
+    color: var(--mauve);
+    font-style: italic;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ─── ON AIR BADGE ────────────────────────────────── */
+  .on-air-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .on-air-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,0,60,0.12);
+    border: 2px solid #ff003c;
+    border-radius: 4px;
+    padding: 0.35rem 1rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+    color: #ff003c;
+    animation: blink-badge 1.4s ease-in-out infinite;
+  }
+
+  .on-air-dot {
+    width: 9px; height: 9px;
+    background: #ff003c;
+    border-radius: 50%;
+    animation: blink-dot 1.4s ease-in-out infinite;
+  }
+
+  @keyframes blink-badge {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+  @keyframes blink-dot {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(0.4); }
+  }
+
+  .freq-pills {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .freq-pill {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    border: 1px solid;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+  .pill-am  { border-color: var(--gold);   color: var(--gold);   background: rgba(255,215,0,0.08); }
+  .pill-fm  { border-color: var(--blue);   color: var(--blue);   background: rgba(0,212,255,0.08); }
+  .pill-priv{ border-color: var(--pink);   color: var(--pink);   background: rgba(255,110,180,0.08); }
+  .pill-i2p { border-color: var(--mauve);  color: var(--mauve);  background: rgba(196,164,200,0.08); }
+
+  /* ─── PLAYER CARD ─────────────────────────────────── */
+  .player-section {
+    max-width: 700px;
+    margin: 0 auto 4rem;
+    padding: 0 1.5rem;
+  }
+
+  .player-card {
+    background: var(--bg2);
+    border: 1px solid var(--purple);
+    border-radius: 8px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .player-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--purple), var(--pink), var(--green), var(--gold));
+  }
+
+  .player-now-playing {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--mauve);
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  .player-track {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--green);
+    margin-bottom: 0.2rem;
+  }
+
+  .player-artist {
+    font-size: 0.9rem;
+    color: var(--silver);
+    margin-bottom: 1.2rem;
+  }
+
+  .player-waveform {
+    width: 100%;
+    height: 50px;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--bg3);
+  }
+
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-play {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s, box-shadow 0.2s;
+    flex-shrink: 0;
+  }
+
+  .btn-play:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(196,164,200,0.4);
+  }
+
+  .volume-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .volume-wrap label {
+    font-size: 0.7rem;
+    color: var(--dim);
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--bg3);
+    border-radius: 2px;
+    flex: 1;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px; height: 13px;
+    background: var(--purple);
+    border-radius: 50%;
+  }
+
+  .player-channel-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-channel {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    border: 1px solid var(--purple);
+    background: transparent;
+    color: var(--mauve);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    font-family: 'Courier New', monospace;
+  }
+  .btn-channel:hover, .btn-channel.active {
+    background: var(--purple);
+    color: #fff;
+    border-color: var(--pink);
+  }
+
+  /* ─── SECTION HEADING ─────────────────────────────── */
+  .section {
+    max-width: 1000px;
+    margin: 0 auto 4rem;
+    padding: 0 1.5rem;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 5px;
+    color: var(--mauve);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  /* ─── SCHEDULE ────────────────────────────────────── */
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .show-card {
+    background: var(--bg2);
+    border: 1px solid rgba(123,94,167,0.4);
+    border-radius: 6px;
+    padding: 1.2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .show-card:hover {
+    border-color: var(--pink);
+    transform: translateY(-2px);
+  }
+
+  .show-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .show-time {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--dim);
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+  }
+
+  .show-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+  }
+
+  .show-host {
+    font-size: 0.8rem;
+    color: var(--silver);
+    margin-bottom: 0.6rem;
+  }
+
+  .show-desc {
+    font-size: 0.78rem;
+    color: var(--dim);
+    line-height: 1.5;
+  }
+
+  .show-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    margin-top: 0.7rem;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  .tag-premiere { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid var(--gold); }
+  .tag-live     { background: rgba(0,255,136,0.1);  color: var(--green); border: 1px solid var(--green); }
+  .tag-replay   { background: rgba(0,212,255,0.1);  color: var(--blue);  border: 1px solid var(--blue); }
+  .tag-unsigned { background: rgba(255,110,180,0.1);color: var(--pink);  border: 1px solid var(--pink); }
+  .tag-late     { background: rgba(123,94,167,0.2); color: var(--mauve); border: 1px solid var(--purple); }
+
+  .color-green  { color: var(--green); }
+  .color-pink   { color: var(--pink); }
+  .color-gold   { color: var(--gold); }
+  .color-blue   { color: var(--blue); }
+  .color-purple { color: var(--mauve); }
+
+  .card-accent-gold   { border-left: 3px solid var(--gold);   }
+  .card-accent-green  { border-left: 3px solid var(--green);  }
+  .card-accent-pink   { border-left: 3px solid var(--pink);   }
+  .card-accent-blue   { border-left: 3px solid var(--blue);   }
+  .card-accent-purple { border-left: 3px solid var(--purple); }
+
+  /* ─── INAUGURAL FEATURE ───────────────────────────── */
+  .inaugural-banner {
+    background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,110,180,0.08));
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .inaugural-banner::before {
+    content: '★ INAUGURAL BROADCAST ★';
+    position: absolute;
+    top: 0.4rem; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    letter-spacing: 4px;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+
+  .inaugural-banner h2 {
+    font-size: clamp(1.5rem, 5vw, 2.8rem);
+    font-weight: 900;
+    font-style: italic;
+    margin-top: 1rem;
+    margin-bottom: 0.4rem;
+    background: linear-gradient(90deg, var(--gold), var(--pink), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .inaugural-banner .subtitle {
+    font-size: 1rem;
+    color: var(--silver);
+    margin-bottom: 0.8rem;
+    letter-spacing: 2px;
+  }
+
+  .inaugural-banner .disco-line {
+    font-size: 0.8rem;
+    color: var(--mauve);
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .inaugural-banner .warning-bar {
+    display: inline-block;
+    background: rgba(255,0,60,0.15);
+    border: 1px solid #ff003c;
+    color: #ff6680;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    padding: 0.3rem 1rem;
+    border-radius: 4px;
+  }
+
+  /* ─── ROUTE 66 NIGHT BLOCK ────────────────────────── */
+  .night-block {
+    background: radial-gradient(ellipse at center, rgba(10,5,20,1), rgba(5,2,12,1));
+    border: 1px solid rgba(123,94,167,0.5);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .night-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--purple), transparent);
+  }
+
+  .highway-label {
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: #fff;
+    margin-bottom: 0.2rem;
+  }
+
+  .highway-label span.rt {
+    color: var(--gold);
+  }
+
+  .highway-sub {
+    font-size: 0.8rem;
+    color: var(--dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .highway-desc {
+    font-size: 0.85rem;
+    color: var(--silver);
+    line-height: 1.7;
+    max-width: 600px;
+    margin-bottom: 1rem;
+  }
+
+  .road-strip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 1.2rem 0;
+    overflow: hidden;
+  }
+
+  .road-line {
+    height: 3px;
+    background: var(--gold);
+    flex: 1;
+    animation: road-scroll 3s linear infinite;
+  }
+
+  .road-dot {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    margin: 0 2px;
+    flex-shrink: 0;
+  }
+
+  @keyframes road-scroll {
+    from { background-position: 0 0; }
+    to   { background-position: 200px 0; }
+  }
+
+  .road-sign {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 64px; height: 64px;
+    background: #152a6e;
+    border: 3px solid #fff;
+    border-radius: 8px;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    font-weight: 900;
+    line-height: 1;
+    color: #fff;
+  }
+
+  .road-sign .us { font-size: 0.5rem; letter-spacing: 2px; }
+  .road-sign .num { font-size: 1.4rem; }
+
+  /* ─── MIDNIGHT RITUAL ─────────────────────────────── */
+  .midnight-box {
+    background: rgba(123,94,167,0.1);
+    border: 1px dashed var(--purple);
+    border-radius: 6px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .midnight-box h3 {
+    color: var(--mauve);
+    font-size: 1rem;
+    letter-spacing: 2px;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+  }
+
+  .midnight-box p {
+    font-size: 0.82rem;
+    color: var(--dim);
+    line-height: 1.6;
+  }
+
+  .midnight-box strong {
+    color: var(--gold);
+  }
+
+  /* ─── CHANNELS ────────────────────────────────────── */
+  .channels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .channel-card {
+    background: var(--bg2);
+    border: 1px solid rgba(123,94,167,0.3);
+    border-radius: 6px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+
+  .channel-card:hover { border-color: var(--green); }
+
+  .channel-icon {
+    font-size: 2rem;
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+
+  .channel-name {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+  }
+
+  .channel-url {
+    font-size: 0.75rem;
+    color: var(--blue);
+    margin-bottom: 0.6rem;
+    letter-spacing: 1px;
+  }
+
+  .channel-desc {
+    font-size: 0.78rem;
+    color: var(--dim);
+    line-height: 1.5;
+  }
+
+  /* ─── AB LICENSE ──────────────────────────────────── */
+  .ab-section {
+    background: linear-gradient(135deg, rgba(0,255,136,0.04), rgba(123,94,167,0.06));
+    border: 1px solid rgba(0,255,136,0.3);
+    border-radius: 8px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .ab-title {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--green);
+    letter-spacing: 2px;
+    margin-bottom: 0.3rem;
+  }
+
+  .ab-subtitle {
+    font-size: 0.8rem;
+    color: var(--dim);
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+  }
+
+  .ab-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .ab-item {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+  }
+
+  .ab-check { color: var(--green); font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+  .ab-item-text {
+    font-size: 0.82rem;
+    color: var(--silver);
+    line-height: 1.4;
+  }
+
+  .ab-article7 {
+    background: rgba(123,94,167,0.15);
+    border-left: 3px solid var(--purple);
+    padding: 1rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--mauve);
+    font-style: italic;
+    line-height: 1.6;
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* ─── ANGUS CANVAS ────────────────────────────────── */
+  .angus-section {
+    text-align: center;
+    padding: 2rem 0;
+    position: relative;
+  }
+
+  #angus-canvas {
+    display: block;
+    margin: 0 auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  .angus-caption {
+    font-size: 0.75rem;
+    color: var(--dim);
+    letter-spacing: 2px;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  /* ─── WIKI LINKS ──────────────────────────────────── */
+  .wiki-link {
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(0,212,255,0.4);
+    transition: color 0.2s;
+  }
+  .wiki-link:hover { color: var(--green); border-bottom-color: var(--green); }
+
+  /* ─── FOOTER ──────────────────────────────────────── */
+  footer {
+    border-top: 1px solid rgba(123,94,167,0.3);
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  footer .footer-line {
+    font-size: 0.75rem;
+    color: var(--dim);
+    letter-spacing: 2px;
+    margin-bottom: 0.4rem;
+  }
+
+  footer .footer-soul {
+    font-size: 0.7rem;
+    color: rgba(123,94,167,0.5);
+    font-style: italic;
+  }
+
+  /* ─── DIVIDER ─────────────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--purple), transparent);
+    margin: 3rem 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── RESPONSIVE ──────────────────────────────────── */
+  @media (max-width: 600px) {
+    .hero { padding: 3rem 1rem 2rem; }
+    .section { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Purple snow canvas -->
+<canvas id="snow-canvas"></canvas>
+
+<!-- Lightning canvas for Angus solo -->
+<canvas id="lightning-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:50;opacity:0;"></canvas>
+
+<script src="nexus-nav.js"></script>
+
+<!-- MOIDGIT TEXT CORE: readable without JS, in Lynx, over Tor, on I2P -->
+<noscript>
+<div style="max-width:720px;margin:2rem auto;padding:1.5rem 2rem;font-family:sans-serif;color:#c8d8e8;line-height:1.7;background:#050912;">
+  <h1 style="font-size:1.6rem;color:#e8f4ff;margin-bottom:0.5rem;">NeXuS RADiO — Sovereign Frequency</h1>
+  <p style="color:#8aabbf;">Internet radio built for the NeXuS network. Available on nexus.am.radio, nexus.fm.radio, and pirate.radio/stage. The art is free. The attention is the asset. The soul is not for sale.</p>
+  <h2 style="color:#00d4ff;margin:1rem 0 0.3rem;">Programming</h2>
+  <ul style="padding-left:1.5rem;color:#8aabbf;">
+    <li><strong style="color:#c8d8e8;">Moidgit Widgit Hour</strong> — experimental web radio. Text-first protocol demonstrations.</li>
+    <li><strong style="color:#c8d8e8;">Wednesday Night Lockdown</strong> — midnight to 6AM. Route 66 → Highway 2. The late shift.</li>
+    <li><strong style="color:#c8d8e8;">Inaugural broadcast</strong> — Bloodhound Gang. Because the internet is for people.</li>
+  </ul>
+  <h2 style="color:#00d4ff;margin:1rem 0 0.3rem;">AB License — Article 7</h2>
+  <p style="color:#8aabbf;">All music broadcast under the AB License. 90% to artists. 10% to distribution. 0% to the platform. The soul of the work is not included in the transaction.</p>
+  <h2 style="color:#00d4ff;margin:1rem 0 0.3rem;">Network</h2>
+  <p style="color:#8aabbf;">Stream available on clearnet, Tor hidden service, I2P eepsite, Yggdrasil, and Reticulum. One frequency. Every network. No gatekeepers.</p>
+  <p><a href="nexus-ads-built-in.html" style="color:#00d4ff;">Read the Ads Built In doctrine →</a></p>
+</div>
+</noscript>
+
+<div class="page">
+
+  <!-- ═══════════════════════════════════════════════════════ HERO -->
+  <section class="hero">
+    <div class="hero-call">Sovereign Frequency</div>
+    <h1 class="hero-title">NeXuS RADiO</h1>
+    <div class="hero-freq">nexus.am.radio &nbsp;·&nbsp; nexus.fm.radio &nbsp;·&nbsp; pirate.radio/stage</div>
+    <div class="hero-tagline">The art is free. The attention is the asset. The soul is not for sale.</div>
+
+    <div class="on-air-wrap">
+      <div class="on-air-badge">
+        <div class="on-air-dot"></div>
+        ON AIR
+      </div>
+      <div class="freq-pills">
+        <span class="freq-pill pill-am">AM · Night Freq</span>
+        <span class="freq-pill pill-fm">FM · Hi-Fi</span>
+        <span class="freq-pill pill-priv">Pirate · Unsigned</span>
+        <span class="freq-pill pill-i2p">I2P · Dark Mirror</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ PLAYER -->
+  <div class="player-section">
+    <div class="player-card">
+      <div class="player-now-playing">Now Playing</div>
+      <div class="player-track" id="track-name">LiVeWiRe</div>
+      <div class="player-artist" id="track-artist">AC/DC — The inaugural broadcast cut</div>
+
+      <canvas class="player-waveform" id="waveform-canvas"></canvas>
+
+      <div class="player-controls">
+        <button class="btn-play" id="btn-play" onclick="togglePlay()" title="Play / Pause">&#9654;</button>
+        <div class="volume-wrap">
+          <label>VOL</label>
+          <input type="range" id="volume" min="0" max="100" value="80" oninput="setVolume(this.value)">
+        </div>
+      </div>
+
+      <div class="player-channel-row">
+        <button class="btn-channel active" onclick="switchChannel('am',this)">nexus.am.radio</button>
+        <button class="btn-channel" onclick="switchChannel('fm',this)">nexus.fm.radio</button>
+        <button class="btn-channel" onclick="switchChannel('stage',this)">pirate.radio/stage</button>
+        <button class="btn-channel" onclick="switchChannel('comedy',this)">pirate.radio/comedy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ INAUGURAL -->
+  <div class="section">
+    <div class="inaugural-banner">
+      <h2>Bloodhound Gang</h2>
+      <div class="subtitle">INAUGURAL BROADCAST &nbsp;·&nbsp; pirate.radio/comedy</div>
+      <div class="disco-line">
+        "The Roof Is on Fire" is educational content.<br>
+        "Bad Touch" is a nature documentary.<br>
+        Corporate Legal has reviewed this broadcast. They have questions.
+      </div>
+      <div class="warning-bar">PARENTAL ADVISORY &nbsp;·&nbsp; EXPLICIT CONTENT &nbsp;·&nbsp; OBVIOUSLY</div>
+    </div>
+
+    <div class="section-label">Programming Note</div>
+    <p style="font-size:0.85rem; color:var(--dim); line-height:1.7; max-width:700px; margin-bottom:2rem;">
+      Doing it before it was cool. The Bloodhound Gang were the original NeXuS programmers — they understood that if you make people laugh hard enough they stop asking questions, and if you reference the Discovery Channel enough it sounds like science.
+      The AB License applies. Their masters stay theirs. NeXuS just provides the transmitter.<br><br>
+      <em style="color:var(--mauve);">We are mammals.</em>
+    </p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ ANGUS 8-BIT -->
+  <div class="section">
+    <div class="section-label">8-bit HD</div>
+    <div class="section-title color-gold">Angus Young — The Duck Walk</div>
+
+    <div class="angus-section">
+      <canvas id="angus-canvas" width="480" height="160"></canvas>
+      <div class="angus-caption">Appears only when the stack is fully sovereign · Lightning lights the wicks · Cannons fire in sync</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ ROUTE 66 -->
+  <div class="section">
+    <div class="section-label">Wednesday Night</div>
+    <div class="section-title color-purple">The Night Frequency Block</div>
+
+    <div class="night-block">
+      <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+        <div class="road-sign">
+          <span class="us">US</span>
+          <span class="num">66</span>
+        </div>
+        <div>
+          <div class="highway-label"><span class="rt">Route 66</span> → Highway <span class="rt">2</span></div>
+          <div class="highway-sub">Midnight to 6 AM &nbsp;·&nbsp; nexus.am.radio &nbsp;·&nbsp; every wednesday</div>
+        </div>
+      </div>
+
+      <div class="road-strip">
+        <div class="road-dot"></div>
+        <div class="road-line"></div>
+        <div class="road-dot"></div>
+        <div class="road-line"></div>
+        <div class="road-dot"></div>
+        <div class="road-line"></div>
+        <div class="road-dot"></div>
+        <div class="road-line"></div>
+        <div class="road-dot"></div>
+        <div class="road-line"></div>
+        <div class="road-dot"></div>
+      </div>
+
+      <div class="highway-desc">
+        You're in a car. The highway stretches out. Route 66 becomes Highway 2 somewhere after midnight — the last road with no traffic, no algorithm, no suggested content. Just the frequency, the dark, and whatever's coming through the speakers.
+      </div>
+
+      <div class="midnight-box">
+        <h3>Midnight Ritual</h3>
+        <p>
+          <strong>LiVeWiRe</strong> opens every Wednesday at midnight sharp.
+          Purple snow falls across every connected terminal.
+          Two cannons fire in sync at the end of the solo.
+          Then silence. Then the road.
+        </p>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="section-label" style="margin-bottom:0.4rem;">Wednesday Night Lockdown — Full Schedule</div>
+    <div class="schedule-grid" style="margin-bottom:2rem;">
+
+      <div class="show-card card-accent-gold">
+        <div class="show-time">WED · 00:00</div>
+        <div class="show-name color-gold">The Midnight Opener</div>
+        <div class="show-host">Tradition</div>
+        <div class="show-desc">LiVeWiRe. Every time. Canons. Snow. The wire goes live.</div>
+        <span class="show-tag tag-live">RITUAL</span>
+      </div>
+
+      <div class="show-card card-accent-purple">
+        <div class="show-time">WED · 00:08 → 02:00</div>
+        <div class="show-name color-purple">Route 66 → Hwy 2</div>
+        <div class="show-host">The Jockey on Duty</div>
+        <div class="show-desc">Two hours of curated bundles. No talk. No ads. Just the AB License working. Jockey picked every track. 90% to the artists. 10% to the ear that knew.</div>
+        <span class="show-tag tag-live">LIVE MIX</span>
+      </div>
+
+      <div class="show-card card-accent-green">
+        <div class="show-time">WED · 02:00 → 04:00</div>
+        <div class="show-name color-green">The Deep Cut</div>
+        <div class="show-host">Unsigned · pirate.radio/stage</div>
+        <div class="show-desc">Artists that haven't been heard yet. The ear found them first. NeXuS gives them the stage. Two hours of debut broadcasts. No gatekeepers. No playlist committee.</div>
+        <span class="show-tag tag-unsigned">UNSIGNED</span>
+      </div>
+
+      <div class="show-card card-accent-pink">
+        <div class="show-time">WED · 04:00 → 06:00</div>
+        <div class="show-name color-pink">Diary of a Madman</div>
+        <div class="show-host">Bark at the Moon · Crazy Train · etc.</div>
+        <div class="show-desc">The 2AM-to-dawn slot. The weird stuff. The deep Ozzy. The early Sabbath. The stuff that sounds better when the city's asleep. Highway 2 ends here at first light.</div>
+        <span class="show-tag tag-late">LATE NIGHT</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ MOIDGIT WIDGIT -->
+  <div class="section">
+    <div class="section-label">Weekly Show</div>
+    <div class="section-title color-pink">Moidgit Widgit</div>
+
+    <div style="background:var(--bg2); border:1px solid var(--pink); border-radius:8px; padding:1.5rem; margin-bottom:2rem; max-width:700px;">
+      <p style="font-size:0.85rem; color:var(--silver); line-height:1.7; margin-bottom:1rem;">
+        Every week. Two hosts. All the buzz from the internet laid out with no filter and maximum energy. The week in weird. The week in tech. The week in music. Whatever happened, Moidgit and Widgit were already there and they have opinions.
+      </p>
+      <p style="font-size:0.82rem; color:var(--dim); line-height:1.7; margin-bottom:0;">
+        <span class="color-pink" style="font-weight:bold;">The Format:</span> Duo hosting, live chat integration, no corporate sponsors, no topic restrictions, full AB License sovereignty. Pirate.radio/comedy channel. Recorded to IPFS. Available on I2P. NeXiuM tips accepted from listeners — straight to the hosts.
+      </p>
+    </div>
+
+    <div class="schedule-grid">
+      <div class="show-card card-accent-pink">
+        <div class="show-time">FRI · 21:00</div>
+        <div class="show-name color-pink">Moidgit Widgit</div>
+        <div class="show-host">pirate.radio/comedy</div>
+        <div class="show-desc">The week in review. Internet chaos condensed. Two voices, zero censorship. The duo nobody expected but everybody needed.</div>
+        <span class="show-tag tag-live">LIVE</span>
+      </div>
+
+      <div class="show-card card-accent-blue">
+        <div class="show-time">SAT · 12:00</div>
+        <div class="show-name color-blue">Moidgit Widgit Replay</div>
+        <div class="show-host">All channels</div>
+        <div class="show-desc">Missed Friday? Saturday noon replay. Also archived permanently on IPFS — the censorship-proof comedy archive that will outlive every platform that ever tried to pull it.</div>
+        <span class="show-tag tag-replay">REPLAY</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ CHANNELS -->
+  <div class="section">
+    <div class="section-label">Three Channels</div>
+    <div class="section-title">Where to Tune In</div>
+
+    <div class="channels-grid">
+      <div class="channel-card">
+        <span class="channel-icon">📻</span>
+        <div class="channel-name color-gold">nexus.am.radio</div>
+        <div class="channel-url">Primary · Night Frequency</div>
+        <div class="channel-desc">The main signal. Curated bundles. Jockey-selected. AB Licensed. Sponsor association not interruption. The one you leave on while you work.</div>
+      </div>
+
+      <div class="channel-card">
+        <span class="channel-icon">🎵</span>
+        <div class="channel-name color-blue">nexus.fm.radio</div>
+        <div class="channel-url">Hi-Fi · Lossless</div>
+        <div class="channel-desc">Full quality. For the ears that notice. Same content as AM, same AB License, higher fidelity. For the nodes with bandwidth to burn.</div>
+      </div>
+
+      <div class="channel-card">
+        <span class="channel-icon">🏴‍☠️</span>
+        <div class="channel-name color-pink">pirate.radio/stage</div>
+        <div class="channel-url">Unsigned · Unheard</div>
+        <div class="channel-desc">The unsigned stage. The artist nobody has heard yet. The Jockey heard them first. Now you do. No gatekeepers. No labels. No playlist algorithm.</div>
+      </div>
+
+      <div class="channel-card">
+        <span class="channel-icon">🎭</span>
+        <div class="channel-name color-purple">pirate.radio/comedy</div>
+        <div class="channel-url">Moidgit Widgit · Live Comedy</div>
+        <div class="channel-desc">Moidgit Widgit weekly. Inaugural Bloodhound Gang broadcast. The stuff that corporate radio would never play. The stuff that needs to be heard.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ AB LICENSE -->
+  <div class="section">
+    <div class="section-label">Artist Protection</div>
+    <div class="ab-section">
+      <div class="ab-title">AB License</div>
+      <div class="ab-subtitle">Artist Broadcast License · Signed with the Key of Pluto · Witnessed by DivaChain</div>
+
+      <div class="ab-grid">
+        <div class="ab-item">
+          <span class="ab-check">✓</span>
+          <div class="ab-item-text">Artist owns masters always, forever, no exceptions</div>
+        </div>
+        <div class="ab-item">
+          <span class="ab-check">✓</span>
+          <div class="ab-item-text">100% of NeXiuM earnings go directly to the artist</div>
+        </div>
+        <div class="ab-item">
+          <span class="ab-check">✓</span>
+          <div class="ab-item-text">NeXuS provides transmitter, stack, IPFS archive, stage</div>
+        </div>
+        <div class="ab-item">
+          <span class="ab-check">✓</span>
+          <div class="ab-item-text">Termination: instant, one transaction, no lawyers, no exit fee</div>
+        </div>
+        <div class="ab-item">
+          <span class="ab-check">✓</span>
+          <div class="ab-item-text">90% of sponsorship goes to artists in the bundle</div>
+        </div>
+        <div class="ab-item">
+          <span class="ab-check">✓</span>
+          <div class="ab-item-text">No tracking. No profiles. No retargeting. Never.</div>
+        </div>
+      </div>
+
+      <div class="ab-article7">
+        <strong style="color:var(--gold);">Article 7 — The Network Soul Clause</strong><br><br>
+        The soul of the art is not part of any transaction, license, CDN delivery, or NeXiuM split.<br>
+        It belongs to the artist and the listener in the moment.<br>
+        It cannot be packaged, distributed, or monetized.<br><br>
+        <strong>The ineffable is not ours. Never ours.</strong>
+      </div>
+    </div>
+
+    <p style="font-size:0.78rem; color:var(--dim); text-align:center; margin-top:1rem;">
+      Want to broadcast on NeXuS? &nbsp;·&nbsp;
+      <a href="nexus-ads-built-in.html" class="wiki-link">Read the Ads Built In doctrine</a> &nbsp;·&nbsp;
+      <a href="nexus-tokenomics.html" class="wiki-link">How NeXiuM flows</a> &nbsp;·&nbsp;
+      <a href="nexus-diva.html" class="wiki-link">DivaChain verification</a>
+    </p>
+  </div>
+
+</div><!-- /.page -->
+
+<footer>
+  <div class="footer-line">NeXuS RADiO &nbsp;·&nbsp; nexus.am.radio &nbsp;·&nbsp; Sovereign Frequency</div>
+  <div class="footer-line">AB License applies to all broadcasts &nbsp;·&nbsp; Artists retain all masters</div>
+  <div class="footer-soul">Network Soul Not Included — Article 7 — The ineffable is not ours</div>
+</footer>
+
+<script>
+// ─── PURPLE SNOW ──────────────────────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('snow-canvas');
+  const ctx = canvas.getContext('2d');
+  let flakes = [];
+  const COLORS = ['#c4a4c8','#7b5ea7','#e0c0ff','#ffffff','#ffd700'];
+  const N = 80;
+
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize);
+  resize();
+
+  for(let i=0;i<N;i++){
+    flakes.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      r: Math.random()*3+1,
+      vx: (Math.random()-0.5)*0.6,
+      vy: Math.random()*0.8+0.3,
+      o: Math.random()*0.7+0.3,
+      c: COLORS[Math.floor(Math.random()*COLORS.length)]
+    });
+  }
+
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    flakes.forEach(f=>{
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+      ctx.fillStyle = f.c;
+      ctx.globalAlpha = f.o;
+      ctx.fill();
+      f.x += f.vx; f.y += f.vy;
+      if(f.y > canvas.height+5){ f.y = -5; f.x = Math.random()*canvas.width; }
+      if(f.x < 0) f.x = canvas.width;
+      if(f.x > canvas.width) f.x = 0;
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ─── WAVEFORM VISUALIZER ──────────────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('waveform-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = 100;
+
+  const BARS = 80;
+  let bars = Array.from({length:BARS}, ()=> Math.random()*0.6+0.1);
+  let playing = false;
+
+  window.setWaveformPlaying = function(p){ playing = p; };
+
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const W = canvas.width, H = canvas.height;
+    const bw = W/BARS;
+
+    bars.forEach((h,i)=>{
+      if(playing) bars[i] = Math.max(0.05, Math.min(1, h + (Math.random()-0.5)*0.15));
+
+      const height = h * H * 0.85;
+      const x = i * bw;
+      const y = (H - height)/2;
+
+      const gradient = ctx.createLinearGradient(0, y, 0, y+height);
+      gradient.addColorStop(0, '#7b5ea7');
+      gradient.addColorStop(0.5, '#ff6eb4');
+      gradient.addColorStop(1, '#00ff88');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x+1, y, bw-2, height);
+    });
+
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ─── PLAYER LOGIC ─────────────────────────────────────────────────────────
+let isPlaying = false;
+const channels = {
+  am:     { track:'Wednesday Night Lockdown',   artist:'nexus.am.radio · Live Mix' },
+  fm:     { track:'Hi-Fi Stream',               artist:'nexus.fm.radio · Lossless' },
+  stage:  { track:'Unsigned Stage — Live',      artist:'pirate.radio/stage · The Unheard' },
+  comedy: { track:'Moidgit Widgit',             artist:'pirate.radio/comedy · Weekly Edition' }
+};
+
+function togglePlay(){
+  isPlaying = !isPlaying;
+  document.getElementById('btn-play').innerHTML = isPlaying ? '&#9646;&#9646;' : '&#9654;';
+  if(typeof setWaveformPlaying === 'function') setWaveformPlaying(isPlaying);
+}
+
+function setVolume(v){
+  // wire to audio element when live stream connected
+}
+
+function switchChannel(ch, btn){
+  document.querySelectorAll('.btn-channel').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const c = channels[ch];
+  document.getElementById('track-name').textContent   = c.track;
+  document.getElementById('track-artist').textContent = c.artist;
+}
+
+// ─── ANGUS 8-BIT DUCK WALK ────────────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('angus-canvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.imageSmoothingEnabled = false;
+
+  // 8-bit pixel palette
+  const BG   = '#00000000';
+  const SK   = '#f5c5a0'; // skin
+  const HAT  = '#1a1a1a'; // black hat/schoolboy
+  const SUIT = '#2a2a3a'; // dark jacket
+  const PANT = '#1a1a2a';
+  const SHO  = '#111';
+  const GIT  = '#b8730a'; // guitar body (SG red-brown)
+  const GIT2 = '#ff2a00'; // SG red accent
+  const STR  = '#eeee44'; // strings
+  const NECK = '#6b4400';
+
+  // 8 frames of duck walk, 16x32 each
+  // Simplified sprite using ctx.fillRect pixel art
+  const SCALE = 5;
+  const SPRITE_W = 16, SPRITE_H = 32;
+
+  // Frame definitions: array of [x,y,color] relative pixel blocks
+  function drawAngusFrame(frame, ox, oy){
+    const f = frame % 8;
+    // Body always present
+    const pixels = [
+      // head
+      [6,0,SK],[7,0,SK],[8,0,SK],[9,0,SK],
+      [5,1,SK],[6,1,SK],[7,1,SK],[8,1,SK],[9,1,SK],[10,1,SK],
+      [5,2,HAT],[6,2,HAT],[7,2,HAT],[8,2,HAT],[9,2,HAT],[10,2,HAT],
+      [4,3,HAT],[5,3,HAT],[6,3,HAT],[7,3,HAT],[8,3,HAT],[9,3,HAT],[10,3,HAT],[11,3,HAT],
+      [5,4,SK],[6,4,SK],[7,4,SK],[8,4,SK],[9,4,SK],[10,4,SK],
+      // neck
+      [7,5,SK],[8,5,SK],
+      // torso
+      [4,6,SUIT],[5,6,SUIT],[6,6,SUIT],[7,6,SUIT],[8,6,SUIT],[9,6,SUIT],[10,6,SUIT],[11,6,SUIT],
+      [4,7,SUIT],[5,7,SUIT],[6,7,SUIT],[7,7,SUIT],[8,7,SUIT],[9,7,SUIT],[10,7,SUIT],[11,7,SUIT],
+      [4,8,SUIT],[5,8,SUIT],[6,8,SUIT],[7,8,SUIT],[8,8,SUIT],[9,8,SUIT],[10,8,SUIT],[11,8,SUIT],
+      [4,9,SUIT],[5,9,SUIT],[6,9,SUIT],[7,9,SUIT],[8,9,SUIT],[9,9,SUIT],[10,9,SUIT],[11,9,SUIT],
+      [5,10,SUIT],[6,10,SUIT],[7,10,SUIT],[8,10,SUIT],[9,10,SUIT],[10,10,SUIT],
+    ];
+
+    // Guitar (right side, tilted)
+    const guitar = [
+      [12,6,GIT2],[13,6,GIT2],[12,7,GIT],[13,7,GIT],[14,7,GIT],
+      [11,8,GIT],[12,8,GIT],[13,8,GIT],[11,9,GIT],[12,9,GIT],
+      [12,10,NECK],[13,10,NECK],[13,11,NECK],[14,11,NECK],
+      [14,12,NECK],[15,12,NECK],[15,13,NECK],
+    ];
+
+    // Legs - duck walk animation
+    const legFrames = [
+      // frame 0
+      [[6,11,PANT],[7,11,PANT],[8,11,PANT],[9,11,PANT],
+       [6,12,PANT],[7,12,PANT],[8,12,PANT],[9,12,PANT],
+       [5,13,PANT],[6,13,PANT],[9,13,PANT],[10,13,PANT],
+       [5,14,PANT],[4,15,SHO],[5,15,SHO],[9,14,PANT],[10,14,SHO],[11,14,SHO]],
+      // frame 1 — squat deeper
+      [[6,11,PANT],[7,11,PANT],[8,11,PANT],[9,11,PANT],
+       [5,12,PANT],[6,12,PANT],[9,12,PANT],[10,12,PANT],
+       [4,13,PANT],[5,13,PANT],[10,13,PANT],[11,13,PANT],
+       [3,14,SHO],[4,14,SHO],[11,14,SHO],[12,14,SHO]],
+      // frame 2
+      [[6,11,PANT],[7,11,PANT],[8,11,PANT],[9,11,PANT],
+       [6,12,PANT],[7,12,PANT],[8,12,PANT],[9,12,PANT],
+       [6,13,PANT],[7,13,PANT],[8,13,PANT],[9,13,PANT],
+       [6,14,SHO],[7,14,SHO],[8,14,SHO],[9,14,SHO]],
+      // frame 3 — step right
+      [[6,11,PANT],[7,11,PANT],[8,11,PANT],[9,11,PANT],
+       [7,12,PANT],[8,12,PANT],
+       [8,13,PANT],[9,13,PANT],[10,13,PANT],
+       [9,14,PANT],[10,14,PANT],
+       [10,15,SHO],[11,15,SHO],[5,13,PANT],[5,14,SHO],[6,14,SHO]],
+      // frames 4-7 mirror 0-3
+      [[6,11,PANT],[7,11,PANT],[8,11,PANT],[9,11,PANT],
+       [6,12,PANT],[7,12,PANT],[8,12,PANT],[9,12,PANT],
+       [5,13,PANT],[6,13,PANT],[9,13,PANT],[10,13,PANT],
+       [5,14,PANT],[4,15,SHO],[5,15,SHO],[9,14,PANT],[11,14,SHO],[12,14,SHO]],
+      [[6,11,PANT],[7,11,PANT],[8,11,PANT],[9,11,PANT],
+       [5,12,PANT],[6,12,PANT],[9,12,PANT],[10,12,PANT],
+       [4,13,PANT],[5,13,PANT],[10,13,PANT],[11,13,PANT],
+       [3,14,SHO],[4,14,SHO],[12,14,SHO],[13,14,SHO]],
+      [[6,11,PANT],[7,11,PANT],[8,11,PANT],[9,11,PANT],
+       [6,12,PANT],[7,12,PANT],[8,12,PANT],[9,12,PANT],
+       [6,13,PANT],[7,13,PANT],[8,13,PANT],[9,13,PANT],
+       [7,14,SHO],[8,14,SHO],[9,14,SHO]],
+      [[6,11,PANT],[7,11,PANT],[8,11,PANT],[9,11,PANT],
+       [7,12,PANT],[8,12,PANT],
+       [6,13,PANT],[7,13,PANT],[8,13,PANT],
+       [5,14,PANT],[6,14,PANT],
+       [4,15,SHO],[5,15,SHO],[9,13,PANT],[10,14,SHO],[11,14,SHO]],
+    ];
+
+    const allPixels = [...pixels, ...guitar, ...legFrames[f]];
+    allPixels.forEach(([px,py,color])=>{
+      ctx.fillStyle = color;
+      ctx.fillRect(ox + px*SCALE, oy + py*SCALE, SCALE, SCALE);
+    });
+  }
+
+  let frame = 0;
+  let angusX = -SPRITE_W * SCALE;
+  let lightFrame = 0;
+  let cannonFired = false;
+  let showLightning = false;
+
+  function drawCannons(x){
+    // Left cannon
+    ctx.fillStyle = '#555';
+    ctx.fillRect(0, H-24, 40, 14);
+    ctx.fillStyle = '#333';
+    ctx.fillRect(40, H-18, 12, 8);
+    // Right cannon
+    ctx.fillStyle = '#555';
+    ctx.fillRect(W-52, H-24, 40, 14);
+    ctx.fillStyle = '#333';
+    ctx.fillRect(W-52, H-18, 12, 8);
+
+    if(cannonFired){
+      // Muzzle flash left
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(40, H-22, 16, 10);
+      ctx.fillStyle = '#ff6600';
+      ctx.fillRect(44, H-20, 10, 6);
+      // Muzzle flash right
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(W-56, H-22, 16, 10);
+      ctx.fillStyle = '#ff6600';
+      ctx.fillRect(W-54, H-20, 10, 6);
+    }
+  }
+
+  function drawLightning(){
+    if(!showLightning) return;
+    const lcvs = document.getElementById('lightning-canvas');
+    lcvs.style.opacity = '1';
+    const lctx = lcvs.getContext('2d');
+    lcvs.width = window.innerWidth;
+    lcvs.height = window.innerHeight;
+    lctx.clearRect(0,0,lcvs.width,lcvs.height);
+
+    // Simple lightning bolt from top
+    lctx.strokeStyle = '#ffd700';
+    lctx.lineWidth = 3;
+    lctx.shadowBlur = 20;
+    lctx.shadowColor = '#ffd700';
+    lctx.beginPath();
+    const bx = lcvs.width * 0.5;
+    lctx.moveTo(bx, 0);
+    lctx.lineTo(bx-20, 80);
+    lctx.lineTo(bx+10, 80);
+    lctx.lineTo(bx-30, 180);
+    lctx.lineTo(bx+5, 180);
+    lctx.lineTo(bx-10, 280);
+    lctx.stroke();
+
+    setTimeout(()=>{
+      lcvs.style.opacity = '0';
+      showLightning = false;
+    }, 300);
+  }
+
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+
+    // Ground line
+    ctx.fillStyle = 'rgba(123,94,167,0.2)';
+    ctx.fillRect(0, H-6, W, 2);
+
+    drawCannons();
+    drawAngusFrame(frame, angusX, H - SPRITE_H*SCALE - 6);
+
+    // Move Angus across screen
+    angusX += 2;
+    frame = (frame+1) % 8;
+
+    // Lightning at frame 7 trigger
+    if(frame === 7 && angusX > W*0.3 && angusX < W*0.7 && !cannonFired){
+      showLightning = true;
+      drawLightning();
+      setTimeout(()=>{ cannonFired = true; }, 100);
+      setTimeout(()=>{ cannonFired = false; }, 800);
+    }
+
+    // Reset when off screen
+    if(angusX > W + SPRITE_W*SCALE){
+      angusX = -SPRITE_W * SCALE;
+      cannonFired = false;
+    }
+
+    setTimeout(tick, 80);
+  }
+
+  tick();
+})();
+</script>
+
+</body>
+</html>

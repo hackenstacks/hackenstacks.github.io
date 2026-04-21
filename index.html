@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXuS — Partnership Briefing · April 21, 2026</title>
+<style>
+  :root {
+    --bg: #05090f; --surface: #0a1220; --surface2: #0e1a2e;
+    --border: #182d4a; --accent: #00d4ff; --accent2: #7b5ea7;
+    --green: #00ff88; --amber: #ffb347; --gold: #ffd700;
+    --text: #c8d8e8; --text-dim: #6a8aaa; --text-bright: #e8f4ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; min-height: 100vh; }
+
+  /* ANIMATED BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(123,94,167,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(255,215,0,0.015) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* GRID OVERLAY */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* HEADER */
+  header { padding: 5rem 2rem 3rem; text-align: center; position: relative; }
+  .header-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--accent); letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 1.2rem; opacity: 0.8; }
+  header h1 { font-size: clamp(3rem, 8vw, 6rem); font-weight: 700; color: var(--text-bright); line-height: 1; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+  header h1 .nexus { color: var(--accent); }
+  .header-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-dim); letter-spacing: 0.1em; margin-top: 0.8rem; }
+  .header-divider { width: 80px; height: 2px; background: linear-gradient(to right, transparent, var(--accent), transparent); margin: 2rem auto; }
+  .header-motto { font-size: 1rem; color: var(--text-dim); max-width: 500px; margin: 0 auto; line-height: 1.7; }
+  .header-motto strong { color: var(--text-bright); }
+
+  /* MEETING BADGE */
+  .meeting-badge { display: inline-flex; align-items: center; gap: 0.8rem; background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.25); border-radius: 8px; padding: 0.8rem 1.5rem; margin: 2rem auto; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+  .meeting-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--gold); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .meeting-text { color: var(--gold); }
+
+  /* FIVE PRINCIPLES */
+  .principles { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 3rem 0; padding: 0 2rem; }
+  .principle { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--text-dim); letter-spacing: 0.1em; position: relative; padding: 0 1rem; }
+  .principle::after { content: '·'; position: absolute; right: -0.1rem; color: var(--border); }
+  .principle:last-child::after { display: none; }
+  .principle:hover { color: var(--accent); transition: color 0.2s; }
+
+  /* PAGES GRID */
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
+  .pages-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.2em; text-align: center; margin-bottom: 2rem; }
+  .pages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; margin-bottom: 4rem; }
+
+  .page-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 0; overflow: hidden; text-decoration: none; color: inherit; display: block; transition: all 0.25s; position: relative; }
+  .page-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  .page-card:hover .card-arrow { opacity: 1; transform: translateX(4px); }
+
+  .card-accent-bar { height: 3px; width: 100%; }
+  .bar-blue { background: linear-gradient(to right, var(--accent), rgba(0,212,255,0.2)); }
+  .bar-purple { background: linear-gradient(to right, var(--accent2), rgba(123,94,167,0.2)); }
+  .bar-green { background: linear-gradient(to right, var(--green), rgba(0,255,136,0.2)); }
+  .bar-gold { background: linear-gradient(to right, var(--gold), rgba(255,215,0,0.2)); }
+  .bar-red { background: linear-gradient(to right, #ff4757, rgba(255,71,87,0.2)); }
+  .bar-amber { background: linear-gradient(to right, var(--amber), rgba(255,179,71,0.2)); }
+
+  .card-inner { padding: 1.8rem; }
+  .card-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.6rem; opacity: 0.7; }
+  .card-title { font-size: 1.35rem; font-weight: 700; color: var(--text-bright); margin-bottom: 0.5rem; line-height: 1.2; }
+  .card-desc { font-size: 0.84rem; color: var(--text-dim); line-height: 1.65; margin-bottom: 1.2rem; }
+  .card-topics { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.2rem; }
+  .card-topic { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 3px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-dim); }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border); }
+  .card-status { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; display: flex; align-items: center; gap: 0.4rem; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-live { background: var(--green); box-shadow: 0 0 5px var(--green); }
+  .dot-ready { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
+  .dot-gold { background: var(--gold); box-shadow: 0 0 5px var(--gold); }
+  .card-arrow { font-size: 1.1rem; color: var(--text-dim); opacity: 0.4; transition: all 0.2s; }
+
+  /* DIVA UPDATE BOX */
+  .diva-update { background: rgba(255,215,0,0.03); border: 1px solid rgba(255,215,0,0.2); border-radius: 10px; padding: 2rem; margin: 0 0 3rem; }
+  .update-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; }
+  .update-icon { font-size: 1.3rem; }
+  .update-title { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--gold); font-weight: 700; }
+  .update-date { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-dim); margin-left: auto; }
+  .update-body { font-size: 0.86rem; color: var(--text); line-height: 1.7; }
+  .update-body p { margin-bottom: 0.6rem; }
+  .update-body strong { color: var(--gold); }
+  .update-body .consensus-tag { display: inline-block; background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); color: var(--green); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 3px; margin: 0.1rem; }
+
+  /* NEXUS QUOTE */
+  .nexus-quote { text-align: center; padding: 4rem 2rem; }
+  .quote-text { font-size: clamp(1.1rem, 3vw, 1.5rem); color: var(--text-bright); max-width: 700px; margin: 0 auto; line-height: 1.6; font-style: italic; }
+  .quote-attr { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); margin-top: 1.2rem; letter-spacing: 0.1em; }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--border); padding: 2.5rem; text-align: center; }
+  .footer-logo { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--accent); letter-spacing: 0.2em; margin-bottom: 0.5rem; }
+  .footer-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 1rem; }
+  .footer-links { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+  .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--accent); }
+
+  @media (max-width: 600px) { .pages-grid { grid-template-columns: 1fr; } header h1 { font-size: 3rem; } }
+</style>
+</head>
+<body>
+<script src="nexus-nav.js"></script>
+
+<header>
+  <div class="header-tag">Konrad Partnership Briefing · April 21, 2026</div>
+  <h1><span class="nexus">NeXuS</span></h1>
+  <div class="header-sub">Sane · Simple · Secure · Stealthy · Beautiful</div>
+  <div class="header-divider"></div>
+  <p class="header-motto"><strong>Together Everyone Achieves More</strong> — for individual freedom.<br>We don't make promises. We deliver infrastructure.</p>
+  <p style="font-family:'JetBrains Mono',monospace; font-size:0.9rem; color:var(--accent); margin-top:1rem; letter-spacing:0.05em;">The code is public. The user's data isn't.</p>
+  <div style="text-align:center;">
+    <div class="meeting-badge">
+      <div class="meeting-dot"></div>
+      <span class="meeting-text">DivaChain × NeXuS Partnership</span>
+    </div>
+  </div>
+</header>
+
+<div class="principles">
+  <span class="principle">Privacy is the protocol</span>
+  <span class="principle">mewe — sovereign me inside a we</span>
+  <span class="principle">Infrastructure is capital</span>
+  <span class="principle">No middlemen capture value</span>
+  <span class="principle">Contribute · earn badges · earn NeXiuM</span>
+  <span class="principle">meWEwowow</span>
+</div>
+
+<!-- KONRAD UPDATE -->
+<div class="container">
+  <div class="diva-update">
+    <div class="update-header">
+      <div class="update-icon">⛓️</div>
+      <div class="update-title">DivaChain — Major Consensus Update (April 21, 2026)</div>
+      <div class="update-date">TONIGHT</div>
+    </div>
+    <div class="update-body">
+      <p>Konrad is committing the core architectural change tonight. <strong>Vote-based consensus is being replaced with Proof of Storage</strong> — a CAP-aware implementation designed specifically for I2P's partition tolerance requirements.</p>
+      <p>This is a year of research landing in one commit. Key additions: <strong>network spam protection (Argus PoW)</strong>, node join/leave protocol, and the new CAP implementation.</p>
+      <p>Konrad agrees with NeXuS papers on: <span class="consensus-tag">Identity Management</span><span class="consensus-tag">NFT</span><span class="consensus-tag">Accounting</span> — ZKP section needs clearer real-world explanation for the meeting.</p>
+      <p style="color:var(--text-dim); font-size:0.82rem; margin-top:0.8rem;"><strong style="color:var(--gold);">NeXiuM Alignment:</strong> DivaChain's Proof of Storage is a specific form of NeXiuM's Proof of Service. These are not competing — they are complementary layers. Storage verified by DivaChain → NeXiuM settlement layer — contributors earn badges that multiply earning power.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAGES GRID -->
+<div class="container">
+  <div class="pages-label">// BRIEFING DOCUMENTS — Click any to open</div>
+  <div class="pages-grid">
+
+    <a href="nexus-diva.html" class="page-card">
+      <div class="card-accent-bar bar-gold"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:var(--gold);">Partnership</div>
+        <div class="card-title">NeXuS × DIVA</div>
+        <div class="card-desc">Full partnership vision. Two-economy model. Why DivaChain is the only suitable settlement layer. Phase roadmap Q1–Q4 2026.</div>
+        <div class="card-topics">
+          <span class="card-topic">NeXiuM</span>
+          <span class="card-topic">DivaChain</span>
+          <span class="card-topic">I2P-native</span>
+          <span class="card-topic">Badges</span>
+          <span class="card-topic">Phase roadmap</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-gold"></div><span style="color:var(--gold);">START HERE</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="nexus-tokenomics.html" class="page-card">
+      <div class="card-accent-bar bar-gold"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:var(--gold);">Economics</div>
+        <div class="card-title">NeXiuM Tokenomics</div>
+        <div class="card-desc">Anti-death-spiral elastic emission engine. Proof of Storage. Badge-based earning multipliers — contribute quality work, earn badges, earn more NeXiuM. NFT creator residuals built in.</div>
+        <div class="card-topics">
+          <span class="card-topic">Elastic emission</span>
+          <span class="card-topic">Residual payments</span>
+          <span class="card-topic">Proof of Service</span>
+          <span class="card-topic">Anti-spiral</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-gold"></div><span style="color:var(--gold);">KEY FOR MEETING</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="nexus-darkstack.html" class="page-card">
+      <div class="card-accent-bar bar-blue"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:var(--accent);">Infrastructure</div>
+        <div class="card-title">The Dark Stack</div>
+        <div class="card-desc">7-layer Hydra architecture. Medusa smart router. Tor → I2P → Yggdrasil transport. Infrastructure as economic engine — every layer earns NeXiuM.</div>
+        <div class="card-topics">
+          <span class="card-topic">Hydra 7-layer</span>
+          <span class="card-topic">Medusa HAProxy</span>
+          <span class="card-topic">Tor + I2P</span>
+          <span class="card-topic">Yggdrasil</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-live"></div><span style="color:var(--green);">DEPLOYED</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="nexus-ghost-gate.html" class="page-card">
+      <div class="card-accent-bar bar-red"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:#ff6b7a;">Security</div>
+        <div class="card-title">Ghost Gate</div>
+        <div class="card-desc">Kernel-level nftables firewall. Default DROP. Cerberus 3-head authentication. Phantom chaff traffic obfuscation. Zero implicit trust.</div>
+        <div class="card-topics">
+          <span class="card-topic">nftables</span>
+          <span class="card-topic">default-drop</span>
+          <span class="card-topic">Cerberus KDF</span>
+          <span class="card-topic">Phantom chaff</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-live"></div><span style="color:var(--green);">KERNEL ENFORCED</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="nexus-char-gen.html" class="page-card">
+      <div class="card-accent-bar bar-purple"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:#c09fd4;">Application Layer</div>
+        <div class="card-title">AI Character Generator</div>
+        <div class="card-desc">AI personas with terminal access. Characters query local ollama and aichat for real-time research. 50+ provider support. Plugin system. Nothing hardcoded.</div>
+        <div class="card-topics">
+          <span class="card-topic">Terminal access</span>
+          <span class="card-topic">aichat + ollama</span>
+          <span class="card-topic">AI Horde default</span>
+          <span class="card-topic">Plugin system</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-live"></div><span style="color:var(--green);">RUNNING</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="nexus-overview.html" class="page-card">
+      <div class="card-accent-bar bar-blue"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:var(--accent);">System Overview</div>
+        <div class="card-title">How It All Works</div>
+        <div class="card-desc">Full ecosystem map. Five sectors. CIA+MOE+POP+YMCA framework. Core protocols explained. DivaChain namespace strategy. Operating principles.</div>
+        <div class="card-topics">
+          <span class="card-topic">5 sectors</span>
+          <span class="card-topic">Framework</span>
+          <span class="card-topic">Protocols</span>
+          <span class="card-topic">Infographic</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-ready"></div><span style="color:var(--accent);">OVERVIEW</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="nexus-chart.html" class="page-card">
+      <div class="card-accent-bar bar-green"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:var(--green);">System Log</div>
+        <div class="card-title">NeXuS Activity Log</div>
+        <div class="card-desc">Session timeline and activity chart. Full record of NeXuS project history — CLI system, AI integration, gaming, security stack, and more.</div>
+        <div class="card-topics">
+          <span class="card-topic">Timeline</span>
+          <span class="card-topic">Session history</span>
+          <span class="card-topic">Project log</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-ready"></div><span style="color:var(--accent);">REFERENCE</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- RADiO -->
+    <a href="nexus-radio.html" class="page-card">
+      <div class="card-accent-bar bar-purple"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:var(--accent2);">Broadcasting · AB License · Sovereignty</div>
+        <div class="card-title">NeXuS RADiO 📻</div>
+        <div class="card-desc">Sovereign internet radio on every network. Tor, I2P, Yggdrasil, clearnet — one frequency. 90/10/0 revenue split. Art is free. Soul is not for sale.</div>
+        <div class="card-topics">
+          <span class="card-topic">nexus.am.radio</span>
+          <span class="card-topic">AB License</span>
+          <span class="card-topic">Route 66 → Hwy 2</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-ready" style="background:var(--accent2);box-shadow:0 0 6px var(--accent2);"></div><span style="color:var(--accent2);">ON AIR</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- FanTOM Widget -->
+    <a href="nexus-fantom-widget.html" class="page-card">
+      <div class="card-accent-bar bar-blue"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:var(--accent);">Obfuscation · Traffic Analysis · Phantom</div>
+        <div class="card-title">FanTOM Engine 👻</div>
+        <div class="card-desc">Phantom traffic obfuscation widget. Watch attacker confidence drop in real time. Jitter, noise, Tor/I2P/Reticulum/Snowflake toggles. You become noise.</div>
+        <div class="card-topics">
+          <span class="card-topic">Chaff injection</span>
+          <span class="card-topic">Timing obfuscation</span>
+          <span class="card-topic">Pattern dissolved</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-ready"></div><span style="color:var(--accent);">PHANTOM ACTIVE</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Simulator -->
+    <a href="nexus-simulator.html" class="page-card">
+      <div class="card-accent-bar bar-green"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:var(--green);">Live Dashboard · Stack Visualization</div>
+        <div class="card-title">NeXuS Simulator 🛰️</div>
+        <div class="card-desc">Live sovereign node dashboard. Suit-to-Ninja stealth slider. Ghost Gate counter. Tor/I2P/Reticulum status. NeXiuM earnings ticker. Electric Funeral Pyre.</div>
+        <div class="card-topics">
+          <span class="card-topic">5-level stealth</span>
+          <span class="card-topic">NeXiuM rate</span>
+          <span class="card-topic">Threat exposure</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-ready" style="background:var(--green);box-shadow:0 0 6px var(--green);"></div><span style="color:var(--green);">LIVE</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Ads Built In -->
+    <a href="nexus-ads-built-in.html" class="page-card">
+      <div class="card-accent-bar bar-amber"></div>
+      <div class="card-inner">
+        <div class="card-tag" style="color:var(--amber);">Doctrine · Revenue · AB License</div>
+        <div class="card-title">Ads Built In 📡</div>
+        <div class="card-desc">The official NeXuS advertising doctrine. 90% to artists. 10% to jockeys. 0% to the platform. Network soul not included. The Pi model for sovereign media.</div>
+        <div class="card-topics">
+          <span class="card-topic">90/10/0 split</span>
+          <span class="card-topic">AB License</span>
+          <span class="card-topic">nexus.am.radio</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-status"><div class="status-dot dot-ready" style="background:var(--amber);box-shadow:0 0 6px var(--amber);"></div><span style="color:var(--amber);">DOCTRINE</span></div>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- INFOGRAPHIC -->
+<div class="container" style="padding-bottom:3rem;">
+  <div class="pages-label">// SYSTEM OVERVIEW — How It All Works</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <img src="img/overview.png" alt="NeXuS — How It All Works" style="width:100%;display:block;">
+  </div>
+</div>
+
+<!-- QUOTE -->
+<div class="nexus-quote">
+  <div class="quote-text">"We are not a white paper.<br>We come delivering infrastructure."</div>
+  <div class="quote-attr">NeXuS · 2026 · meWEwowow</div>
+</div>
+
+<footer>
+  <div class="footer-logo">NeXuS</div>
+  <div class="footer-sub">Together Everyone Achieves More — for individual freedom</div>
+  <div class="footer-links">
+    <a href="nexus-overview.html">Overview</a>
+    <a href="nexus-diva.html">NeXuS × DIVA</a>
+    <a href="nexus-tokenomics.html">NeXiuM</a>
+    <a href="nexus-darkstack.html">Dark Stack</a>
+    <a href="nexus-ghost-gate.html">Ghost Gate</a>
+    <a href="nexus-char-gen.html">Char Gen</a>
+    <a href="nexus-chart.html">Activity Log</a>
+    <a href="nexus-radio.html">RADiO</a>
+    <a href="nexus-fantom-widget.html">FanTOM</a>
+    <a href="nexus-simulator.html">Simulator</a>
+    <a href="nexus-ads-built-in.html">Ads Built In</a>
+  </div>
+</footer>
+
+</body>
+</html>

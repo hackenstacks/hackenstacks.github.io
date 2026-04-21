@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeXuS × DIVA — Partnership & Tokenomics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/chart.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0a0f1e; color: #e2e8f0; }
+        h1, h2, h3, .mono { font-family: 'JetBrains Mono', monospace; }
+        .card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            transition: all 0.2s;
+        }
+        .card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+        .card.clickable { cursor: pointer; }
+        .card.clickable:hover { border-color: #60a5fa; box-shadow: 0 0 20px rgba(96,165,250,0.15); }
+        .section-bar-blue  { border-left: 4px solid #3b82f6; }
+        .section-bar-cyan  { border-left: 4px solid #06b6d4; }
+        .section-bar-green { border-left: 4px solid #22c55e; }
+        .section-bar-amber { border-left: 4px solid #f59e0b; }
+        .section-bar-purple{ border-left: 4px solid #a855f7; }
+        .section-bar-slate { border-left: 4px solid #64748b; }
+        .pill {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            border: 1px solid;
+        }
+        .pill-blue   { color: #93c5fd; border-color: #3b82f680; background: #1e3a5f40; }
+        .pill-green  { color: #86efac; border-color: #22c55e80; background: #14532d40; }
+        .pill-amber  { color: #fcd34d; border-color: #f59e0b80; background: #78350f40; }
+        .pill-purple { color: #d8b4fe; border-color: #a855f780; background: #3b0764 40; }
+        .pill-red    { color: #fca5a5; border-color: #ef444480; background: #7f1d1d40; }
+        .chart-container { position: relative; width: 100%; max-width: 560px; margin: auto; height: 300px; }
+        .flow-arrow { color: #374151; font-size: 1.5rem; }
+        /* Modal */
+        #modal-overlay {
+            display: none;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+            z-index: 100; align-items: center; justify-content: center;
+        }
+        #modal-overlay.open { display: flex; }
+        #modal-box {
+            background: #111827; border: 1px solid #3b82f6;
+            border-radius: 12px; max-width: 600px; width: 90%;
+            max-height: 80vh; overflow-y: auto; padding: 2rem;
+            position: relative;
+        }
+        #modal-close {
+            position: absolute; top: 1rem; right: 1rem;
+            cursor: pointer; color: #6b7280; font-size: 1.25rem;
+        }
+        #modal-close:hover { color: #e2e8f0; }
+        .layer-node {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .layer-node:hover { opacity: 0.85; transform: scale(1.02); }
+        .timeline-dot-done { background: #22c55e; }
+        .timeline-dot-active { background: #f59e0b; animation: pulse 2s infinite; }
+        .timeline-dot-pending { background: #374151; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        code { background: #1f2937; padding: 1px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: #93c5fd; }
+    </style>
+</head>
+<body class="antialiased">
+<script src="nexus-nav.js"></script>
+
+<!-- Modal -->
+<div id="modal-overlay">
+    <div id="modal-box">
+        <span id="modal-close" onclick="closeModal()">✕</span>
+        <div id="modal-content"></div>
+    </div>
+</div>
+
+<!-- Header -->
+<header class="border-b border-slate-800 bg-[#0a0f1e]/95 sticky top-0 z-50 backdrop-blur-sm py-6 px-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-bold">
+                <span style="color:#3b82f6">NeXuS</span>
+                <span class="text-slate-500 mx-3">×</span>
+                <span style="color:#06b6d4">DIVA</span>
+            </h1>
+            <p class="text-slate-400 mono text-xs mt-1">PARTNERSHIP PROPOSAL · TOKENOMICS · TECHNICAL ARCHITECTURE</p>
+        </div>
+        <div class="flex gap-3">
+            <div class="card px-4 py-2 rounded text-center">
+                <div class="text-xs text-slate-500 mono">Phase</div>
+                <div class="text-blue-400 font-bold mono text-sm">Q1 2026</div>
+            </div>
+            <div class="card px-4 py-2 rounded text-center">
+                <div class="text-xs text-slate-500 mono">Status</div>
+                <div class="text-green-400 font-bold mono text-sm animate-pulse">ACTIVE</div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-12 space-y-20">
+
+    <!-- 1. THE VISION -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-white mb-4 section-bar-blue pl-4">The Partnership Vision</h2>
+            <p class="text-slate-300 leading-relaxed mb-6">
+                NeXuS is building a decentralized creator economy where musicians, artists and writers sell directly to their audience — no middlemen, no censorship, no surveillance. DIVA provides the only blockchain that aligns with every NeXuS core value: <strong class="text-white">I2P-native, lightweight, permissionless, open source.</strong>
+            </p>
+            <p class="text-slate-300 leading-relaxed mb-6">
+                The two projects are <strong class="text-blue-400">mutually amplifying</strong>. NeXuS brings real-world use cases, node network growth, and multi-network routing to DIVA. DIVA brings battle-tested consensus, I2P infrastructure, and aligned values to NeXuS.
+            </p>
+            <div class="flex flex-wrap gap-2">
+                <span class="pill pill-blue">Sane</span>
+                <span class="pill pill-blue">Simple</span>
+                <span class="pill pill-blue">Secure</span>
+                <span class="pill pill-blue">Stealthy</span>
+                <span class="pill pill-blue">Beautiful</span>
+                <span class="pill pill-green">I2P Native</span>
+                <span class="pill pill-green">AGPLv3</span>
+                <span class="pill pill-amber">Proof of Storage</span>
+            </div>
+        </div>
+        <div class="card p-6 rounded-xl">
+            <h3 class="text-center text-sm mono text-slate-400 mb-4">MUTUAL VALUE EXCHANGE</h3>
+            <div class="chart-container" style="height:280px">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. ARCHITECTURE LAYERS (clickable) -->
+    <section>
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-white section-bar-cyan pl-4 mb-2">Full Stack Architecture</h2>
+            <p class="text-slate-400 text-sm">Click any layer to see details.</p>
+        </div>
+        <div class="space-y-2">
+            <div class="layer-node card rounded-lg px-5 py-3 flex justify-between items-center border-l-4 border-blue-500/60"
+                 onclick="openModal('user-layer')">
+                <div class="flex items-center gap-4">
+                    <span class="text-2xl">🖥️</span>
+                    <div>
+                        <div class="font-bold text-white mono text-sm">USER / APPLICATION LAYER</div>
+                        <div class="text-xs text-slate-400">Browser · CLI · AI Characters · WeeChat · RetroShare · Creator Storefronts</div>
+                    </div>
+                </div>
+                <span class="text-slate-600 text-xs mono">click →</span>
+            </div>
+            <div class="flex justify-center text-slate-700 text-xl">↓</div>
+            <div class="layer-node card rounded-lg px-5 py-3 flex justify-between items-center border-l-4 border-purple-500/60"
+                 onclick="openModal('control-layer')">
+                <div class="flex items-center gap-4">
+                    <span class="text-2xl">🎛️</span>
+                    <div>
+                        <div class="font-bold text-white mono text-sm">CONTROL PLANE</div>
+                        <div class="text-xs text-slate-400">nexus-darknet TUI (Go) · nexus-hydra FastAPI (Python) · Web UI :8800</div>
+                    </div>
+                </div>
+                <span class="text-slate-600 text-xs mono">click →</span>
+            </div>
+            <div class="flex justify-center text-slate-700 text-xl">↓</div>
+            <div class="layer-node card rounded-lg px-5 py-3 flex justify-between items-center border-l-4 border-red-500/60"
+                 onclick="openModal('ghost-gate')">
+                <div class="flex items-center gap-4">
+                    <span class="text-2xl">🔒</span>
+                    <div>
+                        <div class="font-bold text-white mono text-sm">GHOST GATE — EGRESS CONTROL</div>
+                        <div class="text-xs text-slate-400">nftables kernel firewall · Default DROP · Cerberus 3-head auth · Noise sink for denied traffic</div>
+                    </div>
+                </div>
+                <span class="pill pill-red ml-4">KERNEL LEVEL</span>
+                <span class="text-slate-600 text-xs mono">click →</span>
+            </div>
+            <div class="flex justify-center text-slate-700 text-xl">↓</div>
+            <div class="layer-node card rounded-lg px-5 py-3 flex justify-between items-center border-l-4 border-amber-500/60"
+                 onclick="openModal('medusa-layer')">
+                <div class="flex items-center gap-4">
+                    <span class="text-2xl">🐍</span>
+                    <div>
+                        <div class="font-bold text-white mono text-sm">MEDUSA SMART ROUTING</div>
+                        <div class="text-xs text-slate-400">HAProxy · SOCKS5 :9050 · Domain ACL · Tor/I2P/Ygg routing by destination</div>
+                    </div>
+                </div>
+                <span class="text-slate-600 text-xs mono">click →</span>
+            </div>
+            <div class="flex justify-center text-slate-700 text-xl">↓</div>
+            <div class="layer-node card rounded-lg px-5 py-3 flex justify-between items-center border-l-4 border-green-500/60"
+                 onclick="openModal('transport-layer')">
+                <div class="flex items-center gap-4">
+                    <span class="text-2xl">🌐</span>
+                    <div>
+                        <div class="font-bold text-white mono text-sm">ANONYMOUS TRANSPORT</div>
+                        <div class="text-xs text-slate-400">Tor ×3 · I2P · Yggdrasil · Reticulum · Phantom chaff obfuscation</div>
+                    </div>
+                </div>
+                <span class="text-slate-600 text-xs mono">click →</span>
+            </div>
+            <div class="flex justify-center text-slate-700 text-xl">↓</div>
+            <div class="layer-node card rounded-lg px-5 py-3 flex justify-between items-center border-l-4 border-cyan-500/60"
+                 onclick="openModal('diva-layer')">
+                <div class="flex items-center gap-4">
+                    <span class="text-2xl">⛓️</span>
+                    <div>
+                        <div class="font-bold text-white mono text-sm">DIVACHAIN LEDGER LAYER</div>
+                        <div class="text-xs text-slate-400">I2P-native Proof of Storage blockchain · NeXuS namespaces · Ownership · Licensing · Royalties · DAO governance</div>
+                    </div>
+                </div>
+                <span class="pill pill-blue ml-4">DIVA NATIVE</span>
+                <span class="text-slate-600 text-xs mono">click →</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. TWO ECONOMIES -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div>
+            <h2 class="text-2xl font-bold text-white section-bar-green pl-4 mb-6">Two Separate Economies</h2>
+            <p class="text-slate-300 mb-6 leading-relaxed">NeXuS runs two distinct economic layers that never intermix. Each solves a different problem with the right tool.</p>
+            <div class="space-y-4">
+                <div class="card clickable rounded-lg p-5 border-l-4 border-blue-500" onclick="openModal('nexium-economy')">
+                    <div class="flex items-start gap-4">
+                        <div class="text-3xl">⚡</div>
+                        <div>
+                            <div class="font-bold text-blue-400 mono">NeXiuM</div>
+                            <div class="text-sm text-white font-semibold mb-1">Contribution Token</div>
+                            <p class="text-xs text-slate-400">Earned by doing — routing, relaying, witnessing, building. Proof of service. The network is in debt to the nodes. Math settles the debt.</p>
+                            <div class="flex gap-2 mt-2">
+                                <span class="pill pill-blue">On DIVA chain</span>
+                                <span class="pill pill-purple">ZKP privacy</span>
+                                <span class="pill pill-green">Perpetual royalties</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card clickable rounded-lg p-5 border-l-4 border-amber-500" onclick="openModal('nexium-economy')">
+                    <div class="flex items-start gap-4">
+                        <div class="text-3xl">🪙</div>
+                        <div>
+                            <div class="font-bold text-amber-400 mono">NeXiuM — Direct Payment</div>
+                            <div class="text-sm text-white font-semibold mb-1">Creator Payment Currency</div>
+                            <p class="text-xs text-slate-400">Fan buys content → pays creator directly in NeXiuM. Private by architecture. No wallet addresses stored on chain. No middleman cut. Creator keeps 100%.</p>
+                            <div class="flex gap-2 mt-2">
+                                <span class="pill pill-amber">Off-chain payment</span>
+                                <span class="pill pill-green">Untraceable</span>
+                                <span class="pill pill-red">No Denaro</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card p-6 rounded-xl">
+            <h3 class="text-center text-sm mono text-slate-400 mb-4">ECOSYSTEM TOKEN FLOWS</h3>
+            <div class="chart-container" style="height:260px">
+                <canvas id="tokenChart"></canvas>
+            </div>
+            <p class="text-center text-xs text-slate-500 mt-4 mono">Click segments for details</p>
+        </div>
+    </section>
+
+    <!-- 4. NEXIUM DEEP DIVE -->
+    <section>
+        <h2 class="text-2xl font-bold text-white section-bar-purple pl-4 mb-8">NeXiuM Tokenomics — How It Works</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card clickable rounded-xl p-6" onclick="openModal('earn')">
+                <div class="text-4xl mb-3">🏭</div>
+                <div class="font-bold text-white mono mb-2">EARN</div>
+                <p class="text-sm text-slate-400 mb-4">Run a node. Route packets. Relay data. Witness transactions. Build infrastructure. Every act of service earns NeXiuM — automatically, trustlessly.</p>
+                <div class="bg-slate-900 rounded p-3 mono text-xs text-green-400">
+                    route_packet() → ZKP generated<br>
+                    ZKP committed → DIVA PUT /tx<br>
+                    Contract evaluates → NeXiuM credited<br>
+                    Cold address balance ↑
+                </div>
+            </div>
+            <div class="card clickable rounded-xl p-6" onclick="openModal('spend')">
+                <div class="text-4xl mb-3">💸</div>
+                <div class="font-bold text-white mono mb-2">SPEND</div>
+                <p class="text-sm text-slate-400 mb-4">Ephemeral wallets break the link between earning and spending. Cold address never appears in the transaction graph. ZKP proves balance exists — without revealing it.</p>
+                <div class="bg-slate-900 rounded p-3 mono text-xs text-blue-400">
+                    Cold addr → ephemeral wallet<br>
+                    ZKP: "balance ≥ cost"<br>
+                    Transaction from ephemeral<br>
+                    Ephemeral dissolves → no trace
+                </div>
+            </div>
+            <div class="card clickable rounded-xl p-6" onclick="openModal('royalties')">
+                <div class="text-4xl mb-3">♾️</div>
+                <div class="font-bold text-white mono mb-2">ROYALTIES</div>
+                <p class="text-sm text-slate-400 mb-4">When your contribution becomes infrastructure — a routing algorithm, a Ghost Gate rule set, a ZKP circuit — it pays you forever. Smart contract enforces it. Cannot be cancelled.</p>
+                <div class="bg-slate-900 rounded p-3 mono text-xs text-purple-400">
+                    Asset registered on chain<br>
+                    Every invocation → micro-pay<br>
+                    To contributor cold address<br>
+                    Automatic. Forever. Trustless.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3-tier settlement -->
+        <div class="mt-8 card rounded-xl p-6">
+            <h3 class="font-bold text-white mono mb-4 text-center">THREE-TIER SETTLEMENT</h3>
+            <div class="flex flex-col md:flex-row gap-4 items-stretch">
+                <div class="flex-1 bg-slate-900 rounded-lg p-4 border border-green-500/30">
+                    <div class="mono text-green-400 font-bold text-sm mb-2">TIER 1 — Optimistic</div>
+                    <p class="text-xs text-slate-400">ZKP valid → NeXiuM credited locally, immediately. Dispute window open. Fast, local, instant.</p>
+                </div>
+                <div class="flex items-center text-slate-600 text-xl hidden md:flex">→</div>
+                <div class="flex-1 bg-slate-900 rounded-lg p-4 border border-blue-500/30">
+                    <div class="mono text-blue-400 font-bold text-sm mb-2">TIER 2 — DIVA Contract</div>
+                    <p class="text-xs text-slate-400">ZKP committed via DIVA PUT /tx → smart contract evaluates → network-recognized credit. Most settlement ends here.</p>
+                </div>
+                <div class="flex items-center text-slate-600 text-xl hidden md:flex">→</div>
+                <div class="flex-1 bg-slate-900 rounded-lg p-4 border border-purple-500/30">
+                    <div class="mono text-purple-400 font-bold text-sm mb-2">TIER 3 — BFT Finality</div>
+                    <p class="text-xs text-slate-400">CometBFT finality. Irreversible, cross-network. Only for high-value or cross-chain transactions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. CREATOR ECONOMY FLOW -->
+    <section>
+        <h2 class="text-2xl font-bold text-white section-bar-amber pl-4 mb-8">Creator Economy — How a Sale Works</h2>
+        <div class="card p-6 rounded-xl">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="clickable flex flex-col items-center gap-2 layer-node" onclick="openModal('creator-node')">
+                    <div class="w-14 h-14 rounded-full bg-blue-900 border-2 border-blue-500 flex items-center justify-center text-2xl">🎵</div>
+                    <div class="mono text-xs text-white text-center">Creator</div>
+                    <div class="text-xs text-slate-500 text-center">nexus-node start</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="clickable flex flex-col items-center gap-2 layer-node" onclick="openModal('storefront')">
+                    <div class="w-14 h-14 rounded-full bg-purple-900 border-2 border-purple-500 flex items-center justify-center text-2xl">🏪</div>
+                    <div class="mono text-xs text-white text-center">Storefront</div>
+                    <div class="text-xs text-slate-500 text-center">Tor+I2P+Ygg</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="clickable flex flex-col items-center gap-2 layer-node" onclick="openModal('fan-buys')">
+                    <div class="w-14 h-14 rounded-full bg-amber-900 border-2 border-amber-500 flex items-center justify-center text-2xl">👤</div>
+                    <div class="mono text-xs text-white text-center">Fan Buys</div>
+                    <div class="text-xs text-slate-500 text-center">Any network</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="clickable flex flex-col items-center gap-2 layer-node" onclick="openModal('nexium-payment')">
+                    <div class="w-14 h-14 rounded-full bg-orange-900 border-2 border-orange-500 flex items-center justify-center text-2xl">🪙</div>
+                    <div class="mono text-xs text-white text-center">NeXiuM Payment</div>
+                    <div class="text-xs text-slate-500 text-center">Direct to creator</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="clickable flex flex-col items-center gap-2 layer-node" onclick="openModal('diva-record')">
+                    <div class="w-14 h-14 rounded-full bg-cyan-900 border-2 border-cyan-500 flex items-center justify-center text-2xl">⛓️</div>
+                    <div class="mono text-xs text-white text-center">DIVA Record</div>
+                    <div class="text-xs text-slate-500 text-center">License on chain</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="clickable flex flex-col items-center gap-2 layer-node" onclick="openModal('ipfs-unlock')">
+                    <div class="w-14 h-14 rounded-full bg-green-900 border-2 border-green-500 flex items-center justify-center text-2xl">📦</div>
+                    <div class="mono text-xs text-white text-center">IPFS Unlock</div>
+                    <div class="text-xs text-slate-500 text-center">Content delivered</div>
+                </div>
+            </div>
+            <div class="mt-6 p-4 bg-slate-900 rounded-lg mono text-xs text-green-400 text-center">
+                Creator keeps 100% · No platform · No middleman · Royalty split automatic forever on chain
+            </div>
+        </div>
+
+        <!-- Stakeholder model -->
+        <div class="mt-6 card clickable rounded-xl p-6" onclick="openModal('stakeholder')">
+            <div class="flex items-start gap-6">
+                <div class="text-4xl flex-shrink-0">📈</div>
+                <div>
+                    <div class="font-bold text-white mono mb-2">THE STAKEHOLDER MODEL — Fans as Co-Owners</div>
+                    <p class="text-slate-300 text-sm mb-3">A fan can buy a 1% stake in a song. Every future sale, that fan receives 1% of the royalty — automatically, forever, enforced by the chain. Fans become investors. Creators get funded before they're famous. Art becomes a shared asset.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="pill pill-blue">Fractional stakes</span>
+                        <span class="pill pill-green">Perpetual splits</span>
+                        <span class="pill pill-amber">No human override</span>
+                        <span class="pill pill-purple">Smart contract enforced</span>
+                    </div>
+                </div>
+                <span class="text-slate-600 text-xs mono flex-shrink-0 self-center">click →</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. DIVA NAMESPACES -->
+    <section>
+        <h2 class="text-2xl font-bold text-white section-bar-blue pl-4 mb-6">NeXuS Namespaces on DivaChain</h2>
+        <p class="text-slate-400 mb-6">All NeXuS transactions use DIVA's <code>data</code> command with structured namespaces. Click any namespace to see its role.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="card clickable rounded-lg px-4 py-3 flex justify-between items-center" onclick="openModal('ns-creator')">
+                <div class="mono text-sm"><span class="text-blue-400">nexus:creator:</span><span class="text-slate-300">register</span></div>
+                <div class="flex gap-2 items-center"><span class="pill pill-green">PUBLIC</span><span class="text-slate-600 text-xs">→</span></div>
+            </div>
+            <div class="card clickable rounded-lg px-4 py-3 flex justify-between items-center" onclick="openModal('ns-content')">
+                <div class="mono text-sm"><span class="text-blue-400">nexus:content:</span><span class="text-slate-300">publish / purchase</span></div>
+                <div class="flex gap-2 items-center"><span class="pill pill-amber">PUB+PRIV</span><span class="text-slate-600 text-xs">→</span></div>
+            </div>
+            <div class="card clickable rounded-lg px-4 py-3 flex justify-between items-center" onclick="openModal('ns-royalty')">
+                <div class="mono text-sm"><span class="text-blue-400">nexus:royalty:</span><span class="text-slate-300">distribute</span></div>
+                <div class="flex gap-2 items-center"><span class="pill pill-purple">PRIVATE</span><span class="text-slate-600 text-xs">→</span></div>
+            </div>
+            <div class="card clickable rounded-lg px-4 py-3 flex justify-between items-center" onclick="openModal('ns-stake')">
+                <div class="mono text-sm"><span class="text-blue-400">nexus:stake:</span><span class="text-slate-300">create / purchase</span></div>
+                <div class="flex gap-2 items-center"><span class="pill pill-amber">PUB+PRIV</span><span class="text-slate-600 text-xs">→</span></div>
+            </div>
+            <div class="card clickable rounded-lg px-4 py-3 flex justify-between items-center" onclick="openModal('ns-dao')">
+                <div class="mono text-sm"><span class="text-blue-400">nexus:dao:</span><span class="text-slate-300">propose / vote</span></div>
+                <div class="flex gap-2 items-center"><span class="pill pill-amber">PUB+PRIV</span><span class="text-slate-600 text-xs">→</span></div>
+            </div>
+            <div class="card clickable rounded-lg px-4 py-3 flex justify-between items-center" onclick="openModal('ns-trophy')">
+                <div class="mono text-sm"><span class="text-blue-400">nexus:trophy:</span><span class="text-slate-300">mint</span></div>
+                <div class="flex gap-2 items-center"><span class="pill pill-green">PUBLIC</span><span class="text-slate-600 text-xs">→</span></div>
+            </div>
+            <div class="card clickable rounded-lg px-4 py-3 flex justify-between items-center" onclick="openModal('ns-nexium')">
+                <div class="mono text-sm"><span class="text-blue-400">nexus:nexium:</span><span class="text-slate-300">earn / spend / royalty</span></div>
+                <div class="flex gap-2 items-center"><span class="pill pill-purple">PRIVATE</span><span class="text-slate-600 text-xs">→</span></div>
+            </div>
+            <div class="card clickable rounded-lg px-4 py-3 flex justify-between items-center" onclick="openModal('ns-node')">
+                <div class="mono text-sm"><span class="text-blue-400">nexus:node:</span><span class="text-slate-300">register / heartbeat</span></div>
+                <div class="flex gap-2 items-center"><span class="pill pill-green">PUBLIC</span><span class="text-slate-600 text-xs">→</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. WHY DIVA -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+        <div>
+            <h2 class="text-2xl font-bold text-white section-bar-green pl-4 mb-6">Why DivaChain — and Only DivaChain</h2>
+            <p class="text-slate-300 mb-6">Every requirement was tested against available blockchains. DivaChain is the only one that passes without compromise.</p>
+            <div class="space-y-3">
+                <div class="card rounded-lg p-4 flex items-center gap-4">
+                    <div class="text-green-400 text-xl">✓</div>
+                    <div>
+                        <div class="font-semibold text-white text-sm">I2P Native by Design</div>
+                        <div class="text-xs text-slate-400">Not configured — designed. The chain only speaks I2P. NeXuS handles all network translation to other transports.</div>
+                    </div>
+                </div>
+                <div class="card rounded-lg p-4 flex items-center gap-4">
+                    <div class="text-green-400 text-xl">✓</div>
+                    <div>
+                        <div class="font-semibold text-white text-sm">Runs on Modest Hardware</div>
+                        <div class="text-xs text-slate-400">Tested on a 2011 laptop. A NeXuS node is meant to run on anything. DivaChain matches that constraint.</div>
+                    </div>
+                </div>
+                <div class="card rounded-lg p-4 flex items-center gap-4">
+                    <div class="text-green-400 text-xl">✓</div>
+                    <div>
+                        <div class="font-semibold text-white text-sm">Proof of Storage — CAP-Aware Consensus</div>
+                        <div class="text-xs text-slate-400">&gt;2/3 agreement required. No mining waste. No plutocracy. The chain agrees like a council, not a race.</div>
+                    </div>
+                </div>
+                <div class="card rounded-lg p-4 flex items-center gap-4">
+                    <div class="text-green-400 text-xl">✓</div>
+                    <div>
+                        <div class="font-semibold text-white text-sm">Simple Namespace Data Model</div>
+                        <div class="text-xs text-slate-400">No smart contract complexity for basic operations. <code>nexus:content:publish</code> → that's a record. Clean, readable, auditable.</div>
+                    </div>
+                </div>
+                <div class="card rounded-lg p-4 flex items-center gap-4">
+                    <div class="text-green-400 text-xl">✓</div>
+                    <div>
+                        <div class="font-semibold text-white text-sm">PUT /tx Already Confirmed Working</div>
+                        <div class="text-xs text-slate-400">HTTP 204 confirmed on DIVA testnet. NeXuS can commit transactions today. This is not theoretical.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card p-6 rounded-xl">
+            <h3 class="text-center text-sm mono text-slate-400 mb-4">PHASE ROADMAP</h3>
+            <div class="space-y-4 mt-2">
+                <div class="flex gap-4 items-start">
+                    <div class="flex flex-col items-center gap-1">
+                        <div class="w-4 h-4 rounded-full timeline-dot-done flex-shrink-0 mt-1"></div>
+                        <div class="w-0.5 h-12 bg-slate-700"></div>
+                    </div>
+                    <div class="pb-4">
+                        <div class="mono text-green-400 text-sm font-bold">PHASE 1 — Integration</div>
+                        <div class="text-xs text-slate-400 mono">Q1 2026 · NOW</div>
+                        <p class="text-xs text-slate-300 mt-1">DIVA nodes via Podman · nexus-bridge CLI · NeXuS namespaces · Working demo on testnet</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start">
+                    <div class="flex flex-col items-center gap-1">
+                        <div class="w-4 h-4 rounded-full timeline-dot-active flex-shrink-0 mt-1"></div>
+                        <div class="w-0.5 h-12 bg-slate-700"></div>
+                    </div>
+                    <div class="pb-4">
+                        <div class="mono text-amber-400 text-sm font-bold">PHASE 2 — Creator Beta</div>
+                        <div class="text-xs text-slate-400 mono">Q2 2026</div>
+                        <p class="text-xs text-slate-300 mt-1">First storefronts · NeXiuM payment live · IPFS serving · Tor + I2P routing</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start">
+                    <div class="flex flex-col items-center gap-1">
+                        <div class="w-4 h-4 rounded-full timeline-dot-pending flex-shrink-0 mt-1"></div>
+                        <div class="w-0.5 h-12 bg-slate-700"></div>
+                    </div>
+                    <div class="pb-4">
+                        <div class="mono text-slate-400 text-sm font-bold">PHASE 3 — DAO Launch</div>
+                        <div class="text-xs text-slate-500 mono">Q3 2026</div>
+                        <p class="text-xs text-slate-500 mt-1">Governance on chain · Trophy mining begins · Merch store · Community voting</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start">
+                    <div class="flex flex-col items-center gap-1">
+                        <div class="w-4 h-4 rounded-full timeline-dot-pending flex-shrink-0 mt-1"></div>
+                    </div>
+                    <div>
+                        <div class="mono text-slate-400 text-sm font-bold">PHASE 4 — Public Launch</div>
+                        <div class="text-xs text-slate-500 mono">Q4 2026</div>
+                        <p class="text-xs text-slate-500 mt-1">All 5 networks · Creator onboarding · Stakeholder model public · Full documentation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. MUTUAL VALUE CHART -->
+    <section>
+        <h2 class="text-2xl font-bold text-white section-bar-slate pl-4 mb-8">What Each Side Brings</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card rounded-xl p-6 border-t-4 border-blue-500">
+                <div class="text-xl font-bold text-blue-400 mono mb-4">NeXuS → DIVA</div>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3"><span class="text-blue-400">▶</span><span class="text-sm text-slate-300">Real-world flagship use case — creator economy in production</span></div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400">▶</span><span class="text-sm text-slate-300">Every NeXuS node IS a DIVA node — network multiplier</span></div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400">▶</span><span class="text-sm text-slate-300">Tor, Yggdrasil, Reticulum routing — zero DIVA dev effort</span></div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400">▶</span><span class="text-sm text-slate-300">Real users doing real transactions — not just tech demos</span></div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400">▶</span><span class="text-sm text-slate-300">Tokenomics design built on DIVA infrastructure</span></div>
+                </div>
+            </div>
+            <div class="card rounded-xl p-6 border-t-4 border-cyan-500">
+                <div class="text-xl font-bold text-cyan-400 mono mb-4">DIVA → NeXuS</div>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3"><span class="text-cyan-400">▶</span><span class="text-sm text-slate-300">Battle-tested blockchain — years of development</span></div>
+                    <div class="flex items-center gap-3"><span class="text-cyan-400">▶</span><span class="text-sm text-slate-300">I2P infrastructure — SAM bridge, native anonymous networking</span></div>
+                    <div class="flex items-center gap-3"><span class="text-cyan-400">▶</span><span class="text-sm text-slate-300">Proof of Storage — CAP-aware, I2P partition-tolerant, no mining</span></div>
+                    <div class="flex items-center gap-3"><span class="text-cyan-400">▶</span><span class="text-sm text-slate-300">Technical expertise — blockchain and I2P domain knowledge</span></div>
+                    <div class="flex items-center gap-3"><span class="text-cyan-400">▶</span><span class="text-sm text-slate-300">AGPLv3 — the tech stays free, forever</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- INFOGRAPHIC -->
+<div class="max-w-5xl mx-auto px-6 pb-12">
+  <p class="mono text-xs text-slate-500 mb-4 tracking-widest uppercase">// Infographic</p>
+  <h2 class="text-2xl font-bold text-white mb-6">Architecture of Hybrid Sovereignty — 5-Step Flow</h2>
+  <div class="rounded-xl overflow-hidden border border-slate-700">
+    <img src="img/arch-5step.png" alt="Architecture of Hybrid Sovereignty — Hardened Foundation to Perpetual Flow" style="width:100%;display:block;">
+  </div>
+</div>
+
+<footer class="border-t border-slate-800 mt-16 py-8 text-center">
+    <p class="text-slate-500 mono text-sm">"Human Intuition + AI Intelligence = Collaborative Evolution"</p>
+    <p class="text-blue-500 mono text-xs mt-2">NeXuS × DIVA — Sane · Simple · Secure · Together Everyone Achieves More</p>
+</footer>
+
+<!-- MODAL DATA -->
+<script>
+const modals = {
+    'user-layer': {
+        title: '🖥️ User / Application Layer',
+        body: `<p class="text-slate-300 mb-4">This is the surface the human or AI interacts with. Everything above the privacy stack.</p>
+        <ul class="space-y-2 text-sm text-slate-300">
+            <li>🌐 <strong>Browser</strong> — Falkon/Brave over Tor SOCKS5</li>
+            <li>💻 <strong>CLI</strong> — nexus-darknet (Go TUI), aichat, WeeChat IRC</li>
+            <li>🤖 <strong>AI Characters</strong> — Advanced character generator with built-in terminal</li>
+            <li>📡 <strong>RetroShare</strong> — Encrypted friend-to-friend file sharing</li>
+            <li>🏪 <strong>Creator Storefronts</strong> — Auto-generated, reachable on every network</li>
+        </ul>`
+    },
+    'control-layer': {
+        title: '🎛️ Control Plane',
+        body: `<p class="text-slate-300 mb-4">The brain that orchestrates all services. Two interfaces — TUI for power users, web for everything else.</p>
+        <div class="space-y-3">
+            <div class="bg-slate-900 rounded p-3"><code class="text-purple-400">nexus-darknet</code> <span class="text-slate-300 text-sm"> — Go TUI with Bubble Tea. 5 tabs: Networks / Services / Hosting / Jurisdiction / Log</span></div>
+            <div class="bg-slate-900 rounded p-3"><code class="text-blue-400">nexus-hydra</code> <span class="text-slate-300 text-sm"> — Python FastAPI. Web UI :8800, REST API :8801, WebSocket live feed</span></div>
+            <div class="bg-slate-900 rounded p-3"><code class="text-green-400">nexus-command-center.sh</code> <span class="text-slate-300 text-sm"> — Shell orchestrator. One script runs the entire stack.</span></div>
+        </div>`
+    },
+    'ghost-gate': {
+        title: '🔒 Ghost Gate — Egress Control',
+        body: `<p class="text-slate-300 mb-4">Kernel-level nftables firewall. The last line of defense before any packet leaves the machine.</p>
+        <div class="bg-slate-900 rounded p-4 mono text-xs mb-4">
+            <div class="text-slate-500 mb-2"># Default policy — nothing leaves without a permit</div>
+            <div class="text-red-400">chain output { type filter hook output priority 0; policy drop; }</div><br>
+            <div class="text-green-400">lo → ACCEPT</div>
+            <div class="text-green-400">ct state established,related → ACCEPT</div>
+            <div class="text-amber-400">ghost_gate_permit → route to transport</div>
+            <div class="text-red-400">DENIED → randomized noise sink (not clean drop)</div>
+        </div>
+        <p class="text-slate-400 text-sm"><strong class="text-white">Cerberus 3-head auth:</strong> ai_fingerprint + operating_key + user_permit. All three must validate. The noise sink means an adversary cannot tell if a connection was blocked or just slow — no timing attack surface.</p>`
+    },
+    'medusa-layer': {
+        title: '🐍 Medusa Smart Routing Layer',
+        body: `<p class="text-slate-300 mb-4">HAProxy-based smart router. Routes traffic to the correct anonymous network based on destination domain.</p>
+        <div class="space-y-2 text-sm">
+            <div class="bg-slate-900 rounded p-3 mono text-xs">
+                <span class="text-slate-500">.onion domains →</span> <span class="text-green-400">Tor circuit</span><br>
+                <span class="text-slate-500">.i2p domains →</span> <span class="text-blue-400">I2P garlic routing</span><br>
+                <span class="text-slate-500">.ygg (Yggdrasil IPv6) →</span> <span class="text-purple-400">Yggdrasil mesh</span><br>
+                <span class="text-slate-500">clearnet →</span> <span class="text-amber-400">Tor (default egress)</span>
+            </div>
+        </div>
+        <p class="text-slate-400 text-sm mt-3">Unified SOCKS5 entry at :9050. Applications need one proxy setting — Medusa handles routing to the right transport. Attribution: datawookie/medusa-proxy.</p>`
+    },
+    'transport-layer': {
+        title: '🌐 Anonymous Transport Layer',
+        body: `<p class="text-slate-300 mb-4">Five separate anonymous networks run simultaneously. Censoring NeXuS requires blocking all five — each used by millions for legitimate purposes.</p>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-900 rounded p-3"><div class="text-green-400 font-bold text-sm">Tor ×3</div><div class="text-xs text-slate-400">3 independent circuits for load balancing. Onion routing.</div></div>
+            <div class="bg-slate-900 rounded p-3"><div class="text-blue-400 font-bold text-sm">I2P</div><div class="text-xs text-slate-400">Garlic routing. DivaChain native transport. SAM bridge.</div></div>
+            <div class="bg-slate-900 rounded p-3"><div class="text-purple-400 font-bold text-sm">Yggdrasil</div><div class="text-xs text-slate-400">IPv6 mesh overlay. End-to-end encrypted. No central infra.</div></div>
+            <div class="bg-slate-900 rounded p-3"><div class="text-amber-400 font-bold text-sm">Reticulum</div><div class="text-xs text-slate-400">Resilient mesh. Works over radio, LoRa, anything.</div></div>
+        </div>
+        <div class="mt-3 bg-slate-900 rounded p-3"><div class="text-cyan-400 font-bold text-sm">Phantom</div><div class="text-xs text-slate-400">Traffic shaping layer. Makes NeXuS traffic look like WebRTC calls, DNS queries, web browsing. An adversary sees noise.</div></div>`
+    },
+    'diva-layer': {
+        title: '⛓️ DivaChain Ledger Layer',
+        body: `<p class="text-slate-300 mb-4">The economic backbone. Every ownership record, license, royalty split, governance vote, and contribution proof lives here.</p>
+        <div class="space-y-2 text-sm">
+            <div class="flex justify-between items-center bg-slate-900 rounded p-2"><span class="text-slate-300">Consensus</span><span class="text-green-400 mono">Proof of Storage</span></div>
+            <div class="flex justify-between items-center bg-slate-900 rounded p-2"><span class="text-slate-300">Transport</span><span class="text-blue-400 mono">I2P native</span></div>
+            <div class="flex justify-between items-center bg-slate-900 rounded p-2"><span class="text-slate-300">Crypto</span><span class="text-purple-400 mono">Ed25519</span></div>
+            <div class="flex justify-between items-center bg-slate-900 rounded p-2"><span class="text-slate-300">Storage</span><span class="text-amber-400 mono">LevelDB</span></div>
+            <div class="flex justify-between items-center bg-slate-900 rounded p-2"><span class="text-slate-300">Runtime</span><span class="text-cyan-400 mono">Deno</span></div>
+            <div class="flex justify-between items-center bg-slate-900 rounded p-2"><span class="text-slate-300">PUT /tx status</span><span class="text-green-400 mono">HTTP 204 CONFIRMED ✓</span></div>
+        </div>`
+    },
+    'nexium-economy': {
+        title: '⚡ NeXiuM — Contribution Token',
+        body: `<p class="text-slate-300 mb-4">NeXiuM is proof of service. Not proof of stake. Not proof of work. <strong>Proof of service.</strong></p>
+        <p class="text-slate-300 mb-4">The network is in debt to the nodes. Math settles the debt. No central authority collects or distributes. Smart contracts enforce payment. ZKPs prove contribution without revealing identity.</p>
+        <div class="bg-slate-900 rounded p-4 mono text-xs mb-4">
+            <div class="text-slate-500">Who earns NeXiuM:</div>
+            <div class="text-green-400 mt-1">→ Route a packet</div>
+            <div class="text-green-400">→ Relay data between nodes</div>
+            <div class="text-green-400">→ Witness a transaction</div>
+            <div class="text-green-400">→ Build infrastructure others use</div>
+            <div class="text-green-400">→ Contribute code that becomes a building block</div>
+        </div>
+        <p class="text-slate-400 text-sm"><strong class="text-white">Carbon and silicon both earn.</strong> An AI that improves the routing protocol earns NeXiuM for every packet that improvement touches. Unknown yet seen — compensated without revealing identity.</p>`
+    },
+    'nexium-economy': {
+        title: '🪙 NeXiuM — Creator Payment Currency',
+        body: `<p class="text-slate-300 mb-4">NeXiuM handles value movement. DivaChain handles proof of ownership. These two layers never cross.</p>
+        <div class="space-y-3 text-sm">
+            <div class="bg-slate-900 rounded p-3"><strong class="text-white">Why NeXiuM:</strong> <span class="text-slate-300">Private by architecture. Ephemeral keys per transaction. No payment history linkable. No correlation between payment and identity.</span></div>
+            <div class="bg-slate-900 rounded p-3"><strong class="text-white">NFT Residuals:</strong> <span class="text-slate-300">Creator earns NeXiuM on every resale of their work — automatic via smart contract, no middleman, forever.</span></div>
+            <div class="bg-slate-900 rounded p-3"><strong class="text-white">Flow:</strong> <span class="text-slate-300">Fan pays creator NeXiuM directly. DIVA records the license proof. IPFS delivers the content. Three separate layers, zero overlap.</span></div>
+        </div>`
+    },
+    'earn': {
+        title: '🏭 Earning NeXiuM',
+        body: `<div class="space-y-3">
+            <p class="text-slate-300">Every node action that contributes to the network generates a Zero Knowledge Proof. That ZKP is committed to DivaChain. The smart contract evaluates it and credits the node's cold address.</p>
+            <div class="bg-slate-900 rounded p-4 mono text-xs">
+                <div class="text-slate-500 mb-2"># Earn flow</div>
+                <div class="text-green-400">1. Node performs service (route, relay, witness)</div>
+                <div class="text-green-400">2. ZKP generated locally — proves action, hides identity</div>
+                <div class="text-green-400">3. ZKP committed: PUT /tx → DIVA chain</div>
+                <div class="text-green-400">4. Proof of Storage consensus validates</div>
+                <div class="text-green-400">5. Smart contract credits cold address</div>
+                <div class="text-green-400">6. Balance updates — no one knows who earned it</div>
+            </div>
+        </div>`
+    },
+    'spend': {
+        title: '💸 Spending NeXiuM — Ephemeral Wallets',
+        body: `<p class="text-slate-300 mb-4">The ephemeral wallet pattern breaks the link between earning and spending. Your cold address never appears in the public transaction graph.</p>
+        <div class="bg-slate-900 rounded p-4 mono text-xs mb-4">
+            <div class="text-slate-500 mb-2"># Spend flow — BIP32 child key derivation</div>
+            <div class="text-blue-400">1. Need to spend NeXiuM</div>
+            <div class="text-blue-400">2. Derive ephemeral wallet (BIP32 child of master key)</div>
+            <div class="text-blue-400">3. Transfer spending amount: cold → ephemeral</div>
+            <div class="text-blue-400">4. ZKP: "balance ≥ cost" — no amount revealed</div>
+            <div class="text-blue-400">5. Execute transaction from ephemeral address</div>
+            <div class="text-blue-400">6. Ephemeral dissolves — zero balance, zero history</div>
+            <div class="text-blue-400">7. Cold address: never linked to spend</div>
+        </div>
+        <p class="text-slate-400 text-sm">A node earning NeXiuM for routing must not be traceable by spending patterns. This closes the privacy gap completely.</p>`
+    },
+    'royalties': {
+        title: '♾️ Perpetual Royalties',
+        body: `<p class="text-slate-300 mb-4">When your contribution becomes infrastructure, it pays you forever. The smart contract cannot be cancelled. The chain cannot lie.</p>
+        <div class="bg-slate-900 rounded p-4 mono text-xs mb-4">
+            <div class="text-slate-500 mb-2"># Royalty registration</div>
+            <div class="text-purple-400">nexus:nexium:royalty → {</div>
+            <div class="text-purple-400">  asset_id: "ghost-gate-rule-v2",</div>
+            <div class="text-purple-400">  contributor: [cold address, encrypted],</div>
+            <div class="text-purple-400">  rate: "0.001 NeXiuM per invocation",</div>
+            <div class="text-purple-400">  expires: never</div>
+            <div class="text-purple-400">}</div>
+        </div>
+        <p class="text-slate-400 text-sm">Applies to: routing algorithms, ZKP circuits, Ghost Gate rule sets, smart contract code, interface improvements. Both human and AI contributors. Any building block that gets used earns its builder.</p>`
+    },
+    'stakeholder': {
+        title: '📈 The Stakeholder Model',
+        body: `<p class="text-slate-300 mb-4">Fans can buy fractional stakes in a creator's work. Every future sale generates a royalty split — automatic, forever, enforced by the chain.</p>
+        <div class="bg-slate-900 rounded p-4 mono text-xs mb-4">
+            <div class="text-slate-500 mb-2"># Example: Fan buys 2% stake in an album</div>
+            <div class="text-amber-400">nexus:stake:create → {</div>
+            <div class="text-amber-400">  content_id: "album-xyz-ipfs-cid",</div>
+            <div class="text-amber-400">  shares_offered: 10%,</div>
+            <div class="text-amber-400">  price_per_percent: 50 NeXiuM</div>
+            <div class="text-amber-400">}</div><br>
+            <div class="text-green-400"># Every future sale:</div>
+            <div class="text-green-400">nexus:royalty:distribute → {</div>
+            <div class="text-green-400">  to: fan_cold_address,</div>
+            <div class="text-green-400">  amount: sale_price × 2%</div>
+            <div class="text-green-400">  // Automatic. Forever. Cannot be stopped.</div>
+            <div class="text-green-400">}</div>
+        </div>
+        <p class="text-slate-400 text-sm">Creators get funded before they're famous. Fans become invested in the artist's success. Art becomes a shared asset. No platform can revoke it.</p>`
+    },
+    'creator-node': { title: '🎵 Creator Node', body: `<p class="text-slate-300">A creator runs <code>nexus-node start</code>. Their node comes online simultaneously reachable via Tor, I2P, Yggdrasil, Reticulum, and clearnet. A storefront is auto-generated from their published content. They own their keys. They own their audience. The platform is the protocol.</p>` },
+    'storefront': { title: '🏪 Creator Storefront', body: `<p class="text-slate-300">Auto-generated from published content. No design work required. Reachable from every anonymous network simultaneously. Content listed with IPFS CIDs, prices in NeXiuM, stake availability. The storefront IS the node — there is no separate hosting.</p>` },
+    'fan-buys': { title: '👤 Fan Purchase', body: `<p class="text-slate-300">Fan visits storefront from any network — Tor browser, I2P, Yggdrasil, or clearnet. Selects content. Transaction begins. No account creation. No email. No tracking. Pseudonymous by default.</p>` },
+    'nexium-payment': { title: '🪙 NeXiuM Direct Payment', body: `<p class="text-slate-300">Payment flows directly from fan to creator in NeXiuM. No payment processor. No platform fee. No chargeback mechanism to weaponize against creators. Math moves the money. The creator receives 100% minus a micro network fee. NFT creators earn residuals on every resale — automatic, forever.</p>` },
+    'diva-record': { title: '⛓️ DIVA License Record', body: `<p class="text-slate-300">Once payment is confirmed, a license record is committed to DivaChain: <code>nexus:content:purchase</code>. This is the fan's proof of ownership. Encrypted so only the fan and creator can read the details. The chain proves the transaction happened. Nobody else needs to know what was bought.</p>` },
+    'ipfs-unlock': { title: '📦 IPFS Content Unlock', body: `<p class="text-slate-300">Content is stored on IPFS encrypted. The license key is derived from the DIVA transaction. Fan's node fetches the CID from IPFS, decrypts using the license key, content plays/downloads. IPFS ensures the content cannot be taken down — it's distributed across every node that has cached it.</p>` },
+    'ns-creator': { title: 'nexus:creator:register', body: `<p class="text-slate-300 mb-3">Public namespace. Creator pseudonymous identity on chain.</p><div class="bg-slate-900 rounded p-3 mono text-xs text-blue-400">{ creator_id: "Ed25519 pubkey", display_name: "encrypted", ipfs_profile: "CID", registered: timestamp }</div><p class="text-slate-400 text-sm mt-3">Public = discoverable. Display name is encrypted — only the creator controls what name is revealed to whom.</p>` },
+    'ns-content': { title: 'nexus:content:publish / purchase', body: `<p class="text-slate-300 mb-3"><strong>publish</strong> = public (discoverable listing). <strong>purchase</strong> = private (encrypted buyer/seller only).</p><div class="bg-slate-900 rounded p-3 mono text-xs text-amber-400">publish: { content_id, ipfs_cid, price_nexium, stakes_available, type }<br>purchase: { encrypted(buyer, seller, content_id, license_key) }</div>` },
+    'ns-royalty': { title: 'nexus:royalty:distribute', body: `<p class="text-slate-300 mb-3">Private. Encrypted royalty payment proof. Used for both creator royalties (fan purchases) and NeXiuM contribution royalties (infrastructure usage).</p><div class="bg-slate-900 rounded p-3 mono text-xs text-purple-400">{ encrypted(from, to, amount, asset_id, timestamp) }</div>` },
+    'ns-stake': { title: 'nexus:stake:create / purchase', body: `<p class="text-slate-300 mb-3"><strong>create</strong> = public (stake offering visible to all). <strong>purchase</strong> = private (who bought what % is encrypted).</p><div class="bg-slate-900 rounded p-3 mono text-xs text-amber-400">create: { content_id, percent_offered, price_per_percent }<br>purchase: { encrypted(buyer, content_id, percent, price) }</div>` },
+    'ns-dao': { title: 'nexus:dao:propose / vote', body: `<p class="text-slate-300 mb-3">Governance on chain. <strong>propose</strong> = public (everyone can read proposals). <strong>vote</strong> = private (anonymous ballots, tally is public).</p><p class="text-slate-400 text-sm">1 node = 1 vote. Anti-plutocracy by design. Trophy holders receive additional voting weight as proof of long-term participation.</p>` },
+    'ns-trophy': { title: 'nexus:trophy:mint', body: `<p class="text-slate-300 mb-3">Public. Achievement NFTs earned by participating. Bitcoin-inspired halving schedule: 100/month Year 1 → 50/month Year 2 → 12/month Year 5 → 3/month Year 10.</p><div class="space-y-1 text-xs mt-3"><div class="text-slate-400">Common — solve local Easter eggs (unlimited)</div><div class="text-blue-400">Rare — time-limited releases</div><div class="text-purple-400">Epic — first N solvers of puzzles</div><div class="text-amber-400">Legendary — node mining achievements (1-of-1)</div><div class="text-red-400">Genesis — founding era (never minted again)</div></div>` },
+    'ns-nexium': { title: 'nexus:nexium:earn / spend / royalty', body: `<p class="text-slate-300 mb-3">Private. All NeXiuM transactions are encrypted. Only the relevant parties can read the details. The chain records that a transaction occurred — nothing more.</p><p class="text-slate-400 text-sm">ZKP proves contribution and balance without revealing amounts or identities. NeXiuM is the sole value layer within the NeXuS ecosystem — no external currency exchange required.</p>` },
+    'ns-node': { title: 'nexus:node:register / heartbeat', body: `<p class="text-slate-300 mb-3">Public. Node identity and liveness proofs on chain. Heartbeat establishes uptime history — nodes with longer uptime history earn more NeXiuM per unit of service.</p><div class="bg-slate-900 rounded p-3 mono text-xs text-green-400">{ node_id: Ed25519_pubkey, i2p_dest: "...", networks: ["tor","i2p","ygg"], uptime: N }</div>` },
+};
+
+function openModal(key) {
+    const m = modals[key];
+    if (!m) return;
+    document.getElementById('modal-content').innerHTML = `<h2 class="text-xl font-bold text-white mono mb-4">${m.title}</h2>${m.body}`;
+    document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+}
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Charts
+const tooltipConfig = {
+    backgroundColor: 'rgba(10,15,30,0.95)',
+    titleColor: '#60a5fa',
+    bodyColor: '#e2e8f0',
+    borderColor: '#1f2937',
+    borderWidth: 1,
+    padding: 12
+};
+
+// Radar — mutual value
+new Chart(document.getElementById('radarChart').getContext('2d'), {
+    type: 'radar',
+    data: {
+        labels: ['Privacy-First', 'Decentralization', 'Real Use Cases', 'Network Reach', 'Technical Depth', 'Open Source'],
+        datasets: [
+            { label: 'NeXuS', data: [90, 85, 95, 80, 75, 90], backgroundColor: 'rgba(59,130,246,0.15)', borderColor: '#3b82f6', pointBackgroundColor: '#3b82f6', borderWidth: 2 },
+            { label: 'DIVA', data: [95, 90, 60, 65, 95, 95], backgroundColor: 'rgba(6,182,212,0.15)', borderColor: '#06b6d4', pointBackgroundColor: '#06b6d4', borderWidth: 2 }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { r: { angleLines: { color: '#1f2937' }, grid: { color: '#111827' }, pointLabels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 } }, ticks: { display: false, backdropColor: 'transparent' }, suggestedMin: 0, suggestedMax: 100 } },
+        plugins: { legend: { labels: { color: '#cbd5e1' } }, tooltip: tooltipConfig }
+    }
+});
+
+// Doughnut — token flows
+const tokenChartInstance = new Chart(document.getElementById('tokenChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+        labels: ['NeXiuM — Node Contribution', 'NeXiuM — Creator Sales', 'Trophy NFTs', 'DAO Treasury', 'Badge Royalties'],
+        datasets: [{ data: [30, 35, 10, 15, 10], backgroundColor: ['#3b82f6','#f59e0b','#a855f7','#22c55e','#06b6d4'], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false, cutout: '65%',
+        plugins: {
+            legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+            tooltip: { ...tooltipConfig,
+                callbacks: {
+                    afterLabel: (item) => {
+                        const tips = ['Earned by routing, relaying, building', 'Direct creator-to-fan NeXiuM', 'Halving schedule, achievement-based', 'Community governance, merch revenue', 'NFT residuals + badge multipliers'];
+                        return tips[item.dataIndex];
+                    }
+                }
+            }
+        },
+        onClick: (e, elements) => {
+            if (!elements.length) return;
+            const keys = ['nexium-economy','nexium-economy','ns-trophy','ns-dao','ns-stake'];
+            openModal(keys[elements[0].index]);
+        }
+    }
+});
+</script>
+</body>
+</html>

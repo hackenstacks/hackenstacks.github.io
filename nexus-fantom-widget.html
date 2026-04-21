@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXuS — FanTOM Widget</title>
+<style>
+  :root {
+    --bg: #080c18; --surface: #0d1526; --surface2: #111d35;
+    --border: #1e3a5f; --accent: #00d4ff; --accent2: #7b5ea7;
+    --green: #00ff88; --amber: #ffb347; --red: #ff4757;
+    --text: #c8d8e8; --text-dim: #6a8aaa; --text-bright: #e8f4ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh; padding: 2rem;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+
+  /* ── WIDGET SHELL ── */
+  .fantom-widget {
+    width: 100%; max-width: 860px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0,212,255,0.04), 0 20px 60px rgba(0,0,0,0.6);
+    position: relative;
+  }
+
+  /* snow canvas — full widget overlay */
+  #snowCanvas {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s;
+    z-index: 10;
+  }
+  #snowCanvas.active { opacity: 1; }
+
+  /* ── HEADER ── */
+  .widget-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,12,24,0.7);
+  }
+  .widget-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; font-weight: 700;
+    color: var(--accent); letter-spacing: 0.15em;
+  }
+  .widget-title span { color: var(--accent2); }
+  .status-pill {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+    padding: 0.2rem 0.7rem; border-radius: 20px;
+    background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3);
+    color: var(--green); letter-spacing: 0.1em;
+  }
+  .status-pill.alert {
+    background: rgba(255,71,87,0.1); border-color: rgba(255,71,87,0.3);
+    color: var(--red);
+  }
+
+  /* ── TRAFFIC LANES ── */
+  .lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .lane {
+    padding: 1rem 1.5rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .lane:first-child { border-right: 1px solid var(--border); }
+  .lane-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .lane-label.real { color: var(--accent); }
+  .lane-label.attacker { color: var(--red); }
+  canvas.traffic { width: 100%; height: 80px; display: block; border-radius: 4px; }
+
+  /* ── ATTACKER CONFIDENCE ── */
+  .confidence-bar-wrap {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,71,87,0.02);
+  }
+  .conf-row { display: flex; align-items: center; gap: 1rem; }
+  .conf-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    color: var(--text-dim); white-space: nowrap; min-width: 160px;
+  }
+  .conf-track {
+    flex: 1; height: 10px;
+    background: rgba(255,71,87,0.1);
+    border: 1px solid rgba(255,71,87,0.2);
+    border-radius: 5px; overflow: hidden;
+  }
+  .conf-fill {
+    height: 100%; border-radius: 5px;
+    background: linear-gradient(to right, var(--green), var(--amber), var(--red));
+    transition: width 0.4s ease;
+  }
+  .conf-pct {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 700;
+    min-width: 48px; text-align: right;
+    transition: color 0.4s;
+  }
+  .pattern-lock {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+    padding: 0.15rem 0.6rem; border-radius: 3px; margin-top: 0.5rem;
+    display: inline-block;
+  }
+  .pattern-lock.locked {
+    background: rgba(255,71,87,0.12); border: 1px solid rgba(255,71,87,0.3);
+    color: var(--red);
+  }
+  .pattern-lock.clear {
+    background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.25);
+    color: var(--green);
+  }
+
+  /* ── CONTROLS ── */
+  .controls { padding: 1.2rem 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; border-bottom: 1px solid var(--border); }
+  .ctrl-group label {
+    display: flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    color: var(--text-dim); margin-bottom: 0.4rem;
+  }
+  .ctrl-group label span { color: var(--accent); font-weight: 700; }
+  input[type=range] {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 2px;
+    background: var(--border); outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 6px rgba(0,212,255,0.5); cursor: pointer;
+  }
+
+  /* ── TOGGLES ── */
+  .toggles {
+    padding: 1rem 1.5rem;
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+  .toggle-btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    padding: 0.4rem 1rem; border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text-dim); transition: all 0.2s; letter-spacing: 0.1em;
+  }
+  .toggle-btn.on {
+    background: rgba(0,212,255,0.1); border-color: var(--accent);
+    color: var(--accent);
+  }
+  .toggle-btn.snowflake-btn.on {
+    background: rgba(200,220,255,0.08); border-color: #a8d4ff;
+    color: #c8e8ff;
+  }
+
+  /* ── PACKET LOG ── */
+  .pkt-log {
+    padding: 0.8rem 1.5rem 1rem;
+    max-height: 90px; overflow: hidden;
+    position: relative;
+  }
+  .pkt-log::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 30px;
+    background: linear-gradient(transparent, var(--surface));
+  }
+  .pkt-entry {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+    color: var(--text-dim); line-height: 1.6;
+    animation: fadeIn 0.3s ease;
+  }
+  .pkt-entry.chaff { color: #3a5a7a; }
+  .pkt-entry.real { color: #00a8cc; }
+  .pkt-entry.snow { color: #8ab8e0; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 200;
+    background: rgba(8,12,24,0.97); border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1.5rem; display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap;
+    backdrop-filter: blur(10px);
+  }
+  .nav-brand { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 700; color: var(--accent); letter-spacing: 0.15em; margin-right: auto; }
+  nav a { color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; }
+  nav a:hover { color: var(--accent); }
+  nav a.active { color: var(--accent2); }
+
+  /* ── MOIDGIT TEXT CORE (shown without JS, hidden with JS) ── */
+  .text-core { display: none; max-width: 700px; margin: 2rem auto; padding: 1.5rem 2rem; font-family: sans-serif; color: #c8d8e8; line-height: 1.7; }
+  .text-core h1 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+  .text-core h2 { font-size: 1.1rem; margin: 1.2rem 0 0.4rem; }
+  .text-core p { margin-bottom: 0.8rem; color: #8aabbf; }
+  .text-core ul { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+  .text-core a { color: #00d4ff; }
+</style>
+</head>
+<body>
+
+<script src="nexus-nav.js"></script>
+
+<!-- MOIDGIT TEXT CORE: readable without JS, in Lynx, over Tor, on I2P -->
+<noscript>
+<div class="text-core">
+  <h1>FanTOM — Phantom Traffic Engine</h1>
+  <p>FanTOM is NeXuS's traffic obfuscation layer. It injects calibrated noise packets (chaff) alongside your real traffic so that a network-level observer cannot distinguish your actual communication patterns from decoys.</p>
+  <h2>How it works</h2>
+  <ul>
+    <li><strong>Jitter</strong> — randomizes packet timing to defeat timing-analysis fingerprinting</li>
+    <li><strong>Noise</strong> — adds chaff packets at configurable density to obscure volume patterns</li>
+    <li><strong>Snowflake</strong> — bridges censored networks via volunteer Tor relays</li>
+    <li><strong>Phantom mode</strong> — engages full obfuscation suite (jitter 60ms, noise 70%)</li>
+  </ul>
+  <h2>Threat model</h2>
+  <p>A passive observer watching your traffic sees an indistinguishable mix of real and chaff. Attacker confidence drops below 25% when Phantom mode is active — you become statistical noise.</p>
+  <h2>Integration</h2>
+  <p>FanTOM works alongside Tor, I2P, and Reticulum. Each layer activated reduces attacker confidence further. Full stack: FanTOM + Tor + I2P + Reticulum = pattern dissolved.</p>
+  <p><a href="nexus-darkstack.html">Read the full Dark Stack architecture →</a></p>
+</div>
+</noscript>
+
+<div style="padding:1.5rem;display:flex;justify-content:center;">
+<div class="fantom-widget" id="fantomWidget">
+  <canvas id="snowCanvas"></canvas>
+
+  <div class="widget-header">
+    <div class="widget-title">Fan<span>TOM</span> // Phantom Traffic Engine</div>
+    <div class="status-pill" id="statusPill">PHANTOM ACTIVE</div>
+  </div>
+
+  <div class="lanes">
+    <div class="lane">
+      <div class="lane-label real">// Your Real Traffic</div>
+      <canvas class="traffic" id="realCanvas"></canvas>
+    </div>
+    <div class="lane">
+      <div class="lane-label attacker">// What The Attacker Sees</div>
+      <canvas class="traffic" id="attackerCanvas"></canvas>
+    </div>
+  </div>
+
+  <div class="confidence-bar-wrap">
+    <div class="conf-row">
+      <div class="conf-label">Attacker Confidence:</div>
+      <div class="conf-track"><div class="conf-fill" id="confFill" style="width:80%"></div></div>
+      <div class="conf-pct" id="confPct" style="color:var(--red)">80%</div>
+    </div>
+    <div id="patternLock" class="pattern-lock locked">⬛ PATTERN LOCKED — YOU ARE VISIBLE</div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>Jitter <span id="jitterVal">0ms</span></label>
+      <input type="range" id="jitterSlider" min="0" max="100" value="0">
+    </div>
+    <div class="ctrl-group">
+      <label>Noise <span id="noiseVal">0%</span></label>
+      <input type="range" id="noiseSlider" min="0" max="100" value="0">
+    </div>
+  </div>
+
+  <div class="toggles">
+    <button class="toggle-btn" id="btnTor" onclick="toggleLayer('tor')">TOR</button>
+    <button class="toggle-btn" id="btnI2P" onclick="toggleLayer('i2p')">I2P</button>
+    <button class="toggle-btn" id="btnReticum" onclick="toggleLayer('reticulum')">RETICULUM</button>
+    <button class="toggle-btn snowflake-btn" id="btnSnowflake" onclick="toggleLayer('snowflake')">❄ SNOWFLAKE</button>
+    <button class="toggle-btn" id="btnPhantom" onclick="toggleLayer('phantom')" style="margin-left:auto;">PHANTOM OFF</button>
+  </div>
+
+  <div class="pkt-log" id="pktLog"></div>
+</div>
+
+<script>
+// ── STATE ──
+const state = {
+  jitter: 0, noise: 0,
+  tor: false, i2p: false, reticulum: false,
+  snowflake: false, phantom: false,
+  tick: 0
+};
+
+// ── CANVAS SETUP ──
+function setupCanvas(el) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = el.getBoundingClientRect();
+  el.width = rect.width * dpr;
+  el.height = 80 * dpr;
+  const ctx = el.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, w: rect.width, h: 80 };
+}
+
+const realEl = document.getElementById('realCanvas');
+const atkEl  = document.getElementById('attackerCanvas');
+let real, atk;
+
+window.addEventListener('load', () => {
+  real = setupCanvas(realEl);
+  atk  = setupCanvas(atkEl);
+  loop();
+});
+
+// ── PACKET STREAMS ──
+const realPackets = [];   // { x, size, speed, alpha }
+const chaffPackets = [];  // { x, size, speed, alpha, isSnow }
+
+function spawnReal() {
+  realPackets.push({ x: 0, size: 3 + Math.random() * 4, speed: 2 + Math.random() * 2, alpha: 1 });
+}
+
+function spawnChaff(isSnow) {
+  chaffPackets.push({
+    x: 0,
+    size: 1.5 + Math.random() * 3,
+    speed: 1.5 + Math.random() * 3,
+    alpha: 0.3 + Math.random() * 0.4,
+    isSnow
+  });
+}
+
+// ── DRAW ──
+function drawLane(ctx, w, h, packets, color, dimColor, showJitter, label) {
+  ctx.clearRect(0, 0, w, h);
+
+  // grid lines
+  ctx.strokeStyle = 'rgba(30,58,95,0.4)';
+  ctx.lineWidth = 0.5;
+  for (let y = 0; y < h; y += 20) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  packets.forEach(p => {
+    const jitterOffset = showJitter ? (Math.random() - 0.5) * state.jitter * 0.3 : 0;
+    const y = h / 2 + jitterOffset;
+    ctx.beginPath();
+    ctx.arc(p.x, y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.globalAlpha = p.alpha;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // glow
+    ctx.beginPath();
+    ctx.arc(p.x, y, p.size + 3, 0, Math.PI * 2);
+    ctx.fillStyle = color.replace(')', ',0.15)').replace('rgb', 'rgba');
+    ctx.globalAlpha = p.alpha * 0.4;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+}
+
+function drawAttacker(ctx, w, h) {
+  ctx.clearRect(0, 0, w, h);
+
+  // grid
+  ctx.strokeStyle = 'rgba(255,71,87,0.1)';
+  ctx.lineWidth = 0.5;
+  for (let y = 0; y < h; y += 20) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  // blend real + chaff — attacker can't tell which is which
+  const all = [
+    ...realPackets.map(p => ({...p, color: state.noise > 60 ? '#3a6a8a' : '#00d4ff', isReal: true})),
+    ...chaffPackets.map(p => ({...p, color: p.isSnow ? '#8ab8e0' : '#4a7a9a', isReal: false}))
+  ];
+
+  all.forEach(p => {
+    const jitterOffset = state.jitter > 0 ? (Math.random() - 0.5) * state.jitter * 0.4 : 0;
+    const y = h / 2 + jitterOffset;
+    ctx.beginPath();
+    ctx.arc(p.x, p.size, p.size, 0, Math.PI * 2);
+    // attacker view: real traffic desaturated by noise
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = state.noise > 40 ? p.alpha * 0.6 : p.alpha;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+}
+
+// ── SNOW ──
+const snowCanvas = document.getElementById('snowCanvas');
+const snowCtx = snowCanvas.getContext('2d');
+const snowflakes = [];
+
+function resizeSnow() {
+  const w = snowCanvas.parentElement.offsetWidth;
+  const h = snowCanvas.parentElement.offsetHeight;
+  snowCanvas.width = w;
+  snowCanvas.height = h;
+}
+
+function spawnSnowflake() {
+  if (!state.snowflake) return;
+  snowflakes.push({
+    x: Math.random() * snowCanvas.width,
+    y: -5,
+    r: 1 + Math.random() * 3,
+    speed: 0.5 + Math.random() * 1.5,
+    drift: (Math.random() - 0.5) * 0.5,
+    alpha: 0.3 + Math.random() * 0.5
+  });
+}
+
+function drawSnow() {
+  snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+  snowflakes.forEach((s, i) => {
+    snowCtx.beginPath();
+    snowCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    snowCtx.fillStyle = `rgba(180, 220, 255, ${s.alpha})`;
+    snowCtx.fill();
+    s.y += s.speed;
+    s.x += s.drift;
+    if (s.y > snowCanvas.height) snowflakes.splice(i, 1);
+  });
+}
+
+// ── CONFIDENCE CALC ──
+function calcConfidence() {
+  let conf = 100;
+  conf -= state.jitter * 0.45;   // jitter destroys timing fingerprint
+  conf -= state.noise * 0.35;    // noise destroys volume fingerprint
+  if (state.tor) conf -= 8;
+  if (state.i2p) conf -= 10;
+  if (state.reticulum) conf -= 7;
+  if (state.snowflake) conf -= 12;
+  if (state.phantom) conf -= 15;
+  return Math.max(0, Math.round(conf));
+}
+
+function updateConfidence() {
+  const conf = calcConfidence();
+  const fill = document.getElementById('confFill');
+  const pct  = document.getElementById('confPct');
+  const lock = document.getElementById('patternLock');
+  const pill = document.getElementById('statusPill');
+
+  fill.style.width = conf + '%';
+
+  if (conf >= 60) {
+    pct.style.color = 'var(--red)';
+    lock.className = 'pattern-lock locked';
+    lock.textContent = '⬛ PATTERN LOCKED — YOU ARE VISIBLE';
+    pill.className = 'status-pill alert';
+    pill.textContent = 'EXPOSED';
+  } else if (conf >= 25) {
+    pct.style.color = 'var(--amber)';
+    lock.className = 'pattern-lock locked';
+    lock.textContent = '⚠ PARTIAL OBFUSCATION — PATTERN DEGRADING';
+    pill.className = 'status-pill';
+    pill.style.background = 'rgba(255,179,71,0.1)';
+    pill.style.borderColor = 'rgba(255,179,71,0.3)';
+    pill.style.color = 'var(--amber)';
+    pill.textContent = 'DEGRADING';
+  } else {
+    pct.style.color = 'var(--green)';
+    lock.className = 'pattern-lock clear';
+    lock.textContent = '✓ PATTERN DISSOLVED — YOU ARE NOISE';
+    pill.className = 'status-pill';
+    pill.style.background = '';
+    pill.style.borderColor = '';
+    pill.style.color = '';
+    pill.textContent = 'PHANTOM ACTIVE';
+  }
+
+  pct.textContent = conf + '%';
+}
+
+// ── PACKET LOG ──
+const adjectives = ['SYN', 'ACK', 'DATA', 'CHAFF', 'DECOY', 'GHOST', 'NOISE', 'SNOW'];
+const routes = ['tor:9050', 'i2p:4444', 'priv:8118', 'sf:bridge', 'ret:4242'];
+
+function logPacket(type, extra) {
+  const log = document.getElementById('pktLog');
+  const time = new Date().toISOString().split('T')[1].slice(0,8);
+  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const route = routes[Math.floor(Math.random() * routes.length)];
+  const size = 64 + Math.floor(Math.random() * 1400);
+  const div = document.createElement('div');
+  div.className = `pkt-entry ${type}`;
+  div.textContent = `[${time}] ${adj} ${route} ${size}b ${extra || ''}`;
+  log.insertBefore(div, log.firstChild);
+  while (log.children.length > 8) log.removeChild(log.lastChild);
+}
+
+// ── MAIN LOOP ──
+let lastSpawnReal = 0;
+let lastSpawnChaff = 0;
+let lastLog = 0;
+
+function loop() {
+  state.tick++;
+
+  // spawn real packets every ~600ms
+  if (Date.now() - lastSpawnReal > 500 + Math.random() * 400) {
+    spawnReal();
+    lastSpawnReal = Date.now();
+  }
+
+  // spawn chaff based on noise level
+  const chaffRate = state.noise > 0 ? Math.max(50, 800 - state.noise * 7) : 99999;
+  if (state.noise > 0 && Date.now() - lastSpawnChaff > chaffRate) {
+    const isSnow = state.snowflake && Math.random() > 0.5;
+    spawnChaff(isSnow);
+    lastSpawnChaff = Date.now();
+    if (isSnow && Math.random() > 0.7) spawnSnowflake();
+  }
+
+  // advance packets
+  realPackets.forEach((p, i) => {
+    const jDelay = state.jitter > 0 ? (Math.random() * state.jitter * 0.02) : 0;
+    p.x += p.speed - jDelay;
+    if (p.x > real.w + 10) realPackets.splice(i, 1);
+  });
+  chaffPackets.forEach((p, i) => {
+    p.x += p.speed;
+    if (p.x > real.w + 10) chaffPackets.splice(i, 1);
+  });
+
+  // draw
+  drawLane(real.ctx, real.w, real.h, realPackets, 'rgb(0,212,255)', '#3a6a8a', false);
+  drawAttacker(atk.ctx, atk.w, atk.h);
+
+  if (state.snowflake) {
+    spawnSnowflake();
+    drawSnow();
+  }
+
+  // log
+  if (Date.now() - lastLog > 1200) {
+    const type = state.noise > 30 ? (Math.random() > 0.5 ? 'chaff' : 'real') : 'real';
+    const extra = state.snowflake ? '[❄ SF]' : state.phantom ? '[phantom]' : '';
+    logPacket(type, extra);
+    lastLog = Date.now();
+  }
+
+  updateConfidence();
+  requestAnimationFrame(loop);
+}
+
+// ── CONTROLS ──
+document.getElementById('jitterSlider').addEventListener('input', function() {
+  state.jitter = +this.value;
+  document.getElementById('jitterVal').textContent = this.value + 'ms';
+});
+
+document.getElementById('noiseSlider').addEventListener('input', function() {
+  state.noise = +this.value;
+  document.getElementById('noiseVal').textContent = this.value + '%';
+});
+
+function toggleLayer(layer) {
+  state[layer] = !state[layer];
+  const btn = document.getElementById('btn' + layer.charAt(0).toUpperCase() + layer.slice(1));
+  btn.classList.toggle('on', state[layer]);
+
+  if (layer === 'snowflake') {
+    resizeSnow();
+    document.getElementById('snowCanvas').classList.toggle('active', state.snowflake);
+    if (!state.snowflake) snowflakes.length = 0;
+  }
+
+  if (layer === 'phantom') {
+    btn.textContent = state.phantom ? 'PHANTOM ON' : 'PHANTOM OFF';
+    if (state.phantom) {
+      // auto-ramp noise + jitter when phantom engages
+      document.getElementById('noiseSlider').value = 70;
+      document.getElementById('jitterSlider').value = 60;
+      state.noise = 70; state.jitter = 60;
+      document.getElementById('noiseVal').textContent = '70%';
+      document.getElementById('jitterVal').textContent = '60ms';
+    }
+  }
+
+  logPacket('chaff', `[${layer.toUpperCase()} ${state[layer] ? 'ON' : 'OFF'}]`);
+}
+
+window.addEventListener('resize', () => {
+  real = setupCanvas(realEl);
+  atk  = setupCanvas(atkEl);
+  if (state.snowflake) resizeSnow();
+});
+</script>
+</div><!-- /padding wrapper -->
+
+<footer style="border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;color:var(--text-dim);font-size:0.75rem;font-family:'JetBrains Mono',monospace;margin-top:2rem;">
+  <div style="margin-bottom:0.5rem;">NeXuS // FanTOM — Phantom Traffic Obfuscation Engine</div>
+  <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;">
+    <a href="index.html" style="color:var(--text-dim);text-decoration:none;">Home</a>
+    <a href="nexus-darkstack.html" style="color:var(--text-dim);text-decoration:none;">Dark Stack</a>
+    <a href="nexus-ghost-gate.html" style="color:var(--text-dim);text-decoration:none;">Ghost Gate</a>
+    <a href="nexus-simulator.html" style="color:var(--text-dim);text-decoration:none;">Simulator</a>
+    <a href="nexus-radio.html" style="color:var(--text-dim);text-decoration:none;">RADiO</a>
+  </div>
+</footer>
+</body>
+</html>
